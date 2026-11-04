@@ -38,10 +38,10 @@ const MOCK: AnomalyCase[] = [
   },
 ];
 
-export const isLive = () => Boolean(import.meta.env.VITE_N8N_SUMMARY_API_URL);
+export const isLive = () => Boolean(import.meta.env["VITE_N8N_SUMMARY_API_URL"]);
 
 export async function fetchSummary(): Promise<AnomalyCase[]> {
-  const url = import.meta.env.VITE_N8N_SUMMARY_API_URL as string | undefined;
+  const url = import.meta.env["VITE_N8N_SUMMARY_API_URL"] as string | undefined;
   if (!url) return MOCK;
   const res = await fetch(url, { method: "GET" });
   if (!res.ok) throw new Error(`n8n ${res.status}: ${await res.text()}`);

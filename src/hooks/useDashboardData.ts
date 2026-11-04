@@ -1,14 +1,16 @@
 import { useQuery } from "@tanstack/react-query";
+import { useHydrated } from "@tanstack/react-router";
 import { fetchSummary } from "@/services/n8nApi";
 import { useFilters } from "@/lib/filters";
 import { VARIANCE, type AnomalyCase } from "@/lib/types";
 
 export function useDashboardData() {
-  const q = useQuery({ queryKey: ["n8n-summary"], queryFn: fetchSummary, refetchInterval: 60_000 });
+  const hydrated = useHydrated();
+  const q = useQuery({ enabled: hydrated, queryKey: ["n8n-summary"], queryFn: fetchSummary, refetchInterval: 60_000 });
   const { category } = useFilters();
   const all = q.data ?? [];
   const cases = category === "all" ? all : all.filter((c) => c.Category === category);
-  return { ...q, all, cases, kpis: computeKpis(cases) };
+  return { ...q, isLoading: !hydrated || q.isLoading, all, cases, kpis: computeKpis(cases) };
 }
 
 export function computeKpis(cases: AnomalyCase[]) {

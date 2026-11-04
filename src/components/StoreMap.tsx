@@ -3,7 +3,7 @@ import type { Map as LMap, LayerGroup } from "leaflet";
 import type { AnomalyCase } from "@/lib/types";
 import { storeLoc } from "@/lib/filters";
 
-export default function StoreMap({ cases, selected, onSelect }: { cases: AnomalyCase[]; selected?: AnomalyCase; onSelect: (id: string) => void }) {
+export default function StoreMap({ cases, selected, onSelect }: { cases: AnomalyCase[]; selected: AnomalyCase | undefined; onSelect: (id: string) => void }) {
   const el = useRef<HTMLDivElement>(null);
   const map = useRef<LMap | null>(null);
   const layer = useRef<LayerGroup | null>(null);
