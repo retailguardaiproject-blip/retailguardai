@@ -29,6 +29,39 @@ export type Database = {
         }
         Relationships: []
       }
+      n8n_events: {
+        Row: {
+          case_count: number | null
+          id: string
+          kind: string
+          latency_ms: number | null
+          message: string | null
+          occurred_at: string
+          success: boolean
+          user_id: string
+        }
+        Insert: {
+          case_count?: number | null
+          id?: string
+          kind: string
+          latency_ms?: number | null
+          message?: string | null
+          occurred_at?: string
+          success: boolean
+          user_id: string
+        }
+        Update: {
+          case_count?: number | null
+          id?: string
+          kind?: string
+          latency_ms?: number | null
+          message?: string | null
+          occurred_at?: string
+          success?: boolean
+          user_id?: string
+        }
+        Relationships: []
+      }
       n8n_settings: {
         Row: {
           auth_header: string

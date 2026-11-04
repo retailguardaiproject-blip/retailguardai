@@ -15,3 +15,4 @@
 - Only HTTPS production webhooks on n8n Cloud are accepted, with redirects disabled, bounded responses, timeouts, and validated case fields, to prevent credential forwarding and unsafe server fetches.
 - Data hook renders only after mount to avoid SSR hydration mismatches, since data is fetched client-side.
 - Store coordinates live in `src/lib/filters.tsx` because n8n rows carry no location fields.
+- Record n8n fetch and test outcomes in service-written, owner-readable event history; persist only allowlisted error messages, and distinguish successful deliveries from connection tests.
