@@ -4,4 +4,4 @@
 - [ ] Verify live n8n case delivery — waiting on an app sign-in and a real n8n production webhook
 - [x] Inspect uploaded case spreadsheet to confirm the data fields for n8n integration
 - [x] Replace invented sample cases with the uploaded spreadsheet’s 750 cases
-- [ ] Add durable dashboard delivery status, connection test history, and safe error history
+- [x] Add durable dashboard delivery status, connection test history, and safe error history
