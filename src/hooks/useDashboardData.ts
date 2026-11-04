@@ -1,11 +1,12 @@
 import { useQuery } from "@tanstack/react-query";
-import { useHydrated } from "@tanstack/react-router";
+import { useEffect, useState } from "react";
 import { fetchSummary } from "@/services/n8nApi";
 import { useFilters } from "@/lib/filters";
 import { VARIANCE, type AnomalyCase } from "@/lib/types";
 
 export function useDashboardData() {
-  const hydrated = useHydrated();
+  const [hydrated, setHydrated] = useState(false);
+  useEffect(() => setHydrated(true), []);
   const q = useQuery({ enabled: hydrated, queryKey: ["n8n-summary"], queryFn: fetchSummary, refetchInterval: 60_000 });
   const { category } = useFilters();
   const all = hydrated ? (q.data ?? []) : [];
