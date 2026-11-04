@@ -14,7 +14,45 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      n8n_credentials: {
+        Row: {
+          encrypted_token: string
+          user_id: string
+        }
+        Insert: {
+          encrypted_token: string
+          user_id: string
+        }
+        Update: {
+          encrypted_token?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      n8n_settings: {
+        Row: {
+          auth_header: string
+          enabled: boolean
+          endpoint: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          auth_header?: string
+          enabled?: boolean
+          endpoint: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          auth_header?: string
+          enabled?: boolean
+          endpoint?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
