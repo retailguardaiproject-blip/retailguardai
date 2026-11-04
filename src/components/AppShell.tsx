@@ -3,7 +3,6 @@ import { useState, type ReactNode } from "react";
 import { LayoutDashboard, Search, Store, Settings, ChevronsLeft, ShieldCheck } from "lucide-react";
 import { useFilters } from "@/lib/filters";
 import { useDashboardData } from "@/hooks/useDashboardData";
-import { isLive } from "@/services/n8nApi";
 import { cn } from "@/lib/utils";
 
 const NAV = [
@@ -27,7 +26,7 @@ function Sel({ value, onChange, opts, label }: { value: string; onChange: (v: st
 export function AppShell({ children }: { children: ReactNode }) {
   const [collapsed, setCollapsed] = useState(false);
   const f = useFilters();
-  const { all } = useDashboardData();
+  const { all, live, error } = useDashboardData();
   const cats = Array.from(new Set(all.map((c) => c.Category)));
 
   return (
@@ -56,9 +55,9 @@ export function AppShell({ children }: { children: ReactNode }) {
           <Sel label="Region" value={f.region} onChange={f.setRegion} opts={[["all", "All regions"], ["ne", "Northeast"]]} />
           <Sel label="Time" value={f.range} onChange={f.setRange} opts={[["24h", "Last 24h"], ["7d", "Last 7 days"]]} />
           <Sel label="Category" value={f.category} onChange={f.setCategory} opts={[["all", "All categories"], ...cats.map((c) => [c, c] as [string, string])]} />
-          <span className={cn("ml-auto flex items-center gap-2 text-xs", isLive() ? "text-success" : "text-warning")}>
+          <span className={cn("ml-auto flex items-center gap-2 text-xs", live ? "text-success" : "text-warning")}>
             <span className="h-2 w-2 rounded-full bg-current" />
-            {isLive() ? "Live · n8n" : "Sample data"}
+            {error ? "n8n unavailable" : live ? "Live · n8n" : "Sample data"}
           </span>
         </header>
         <main className="flex-1 p-6">{children}</main>
