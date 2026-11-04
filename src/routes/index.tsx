@@ -5,6 +5,7 @@ import { useDashboardData } from "@/hooks/useDashboardData";
 import { Panel, PriorityBadge, Variance } from "@/components/ui-kit";
 import { VARIANCE } from "@/lib/types";
 import { cn } from "@/lib/utils";
+import { DeliveryStatus } from "@/components/DeliveryStatus";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -58,11 +59,11 @@ function Overview() {
     anomalies: Math.max(0, Math.round(kpis.flagged * (0.5 + ((i * 37) % 10) / 10))),
   }));
 
-  if (isLoading) return <p className="text-muted-foreground">Loading data…</p>;
-  if (error) return <p className="text-critical">Couldn't load n8n data: {String(error.message)}</p>;
+  if (isLoading) return <><DeliveryStatus /><p className="text-muted-foreground">Loading data…</p></>;
+  if (error) return <><DeliveryStatus /><p className="text-critical">Couldn't load n8n data: {String(error.message)}</p></>;
 
   return (
-    <div className="grid gap-4 xl:grid-cols-[280px_1fr_320px]">
+    <><DeliveryStatus /><div className="grid gap-4 xl:grid-cols-[280px_1fr_320px]">
       <Panel title="Inventory Health Score">
         <Gauge value={kpis.health} />
         <dl className="mt-4 space-y-2 text-sm">
@@ -144,6 +145,6 @@ function Overview() {
           </table>
         </div>
       </Panel>
-    </div>
+    </div></>
   );
 }
