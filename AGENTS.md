@@ -16,3 +16,4 @@
 - Data hook renders only after mount to avoid SSR hydration mismatches, since data is fetched client-side.
 - Store coordinates live in `src/lib/filters.tsx` because n8n rows carry no location fields.
 - Record n8n fetch and test outcomes in service-written, owner-readable event history; persist only allowlisted error messages, and distinguish successful deliveries from connection tests.
+- n8n pushes summaries to /api/public/receive-summary, verified by an x-api-key shared secret and written only by the server; signed-in users read the latest row.
