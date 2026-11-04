@@ -8,7 +8,7 @@ export function useDashboardData() {
   const hydrated = useHydrated();
   const q = useQuery({ enabled: hydrated, queryKey: ["n8n-summary"], queryFn: fetchSummary, refetchInterval: 60_000 });
   const { category } = useFilters();
-  const all = q.data ?? [];
+  const all = hydrated ? (q.data ?? []) : [];
   const cases = category === "all" ? all : all.filter((c) => c.Category === category);
   return { ...q, isLoading: !hydrated || q.isLoading, all, cases, kpis: computeKpis(cases) };
 }
