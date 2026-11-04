@@ -15,8 +15,8 @@ export default function StoreMap({ cases, selected, onSelect }: { cases: Anomaly
       if (cancelled || !el.current || map.current) return;
       L.current = mod;
       map.current = mod.map(el.current, { zoomControl: true }).setView([40.72, -74.0], 11);
-      mod.tileLayer("https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png", {
-        attribution: "&copy; OpenStreetMap &copy; CARTO",
+      mod.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", {
+        attribution: "&copy; OpenStreetMap", className: "rg-dark-tiles",
       }).addTo(map.current);
       layer.current = mod.layerGroup().addTo(map.current);
       draw();
