@@ -22,7 +22,7 @@ export const Route = createFileRoute('/api/public/receive-summary')({
   server: {
     handlers: {
       POST: async ({ request }) => {
-        const secret = process.env['LOVABLE_SUMMARY_SECRET'];
+        const secret = process.env['N8N_SUMMARY_SECRET'];
         const provided = request.headers.get('x-api-key') ?? '';
         if (!secret || !safeEqual(provided, secret)) return Response.json({ error: 'Unauthorized' }, { status: 401 });
         const text = await request.text();
