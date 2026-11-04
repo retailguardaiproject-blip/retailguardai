@@ -10,6 +10,8 @@
 <!-- LOVABLE:END -->
 
 ## Architecture
-- Dashboard data comes only from n8n via `src/services/n8nApi.ts` + `useDashboardData` (sample data when no feed URL is set); keeps one swap point for the data flow.
+- Live case data is fetched from n8n only through authenticated server functions; disconnected users receive spreadsheet samples, and live failures never silently substitute samples.
+- Store connection settings per user with owner-scoped RLS, and store AES-GCM encrypted credentials in a service-only table so browser reads cannot expose them.
+- Only HTTPS production webhooks on n8n Cloud are accepted, with redirects disabled, bounded responses, timeouts, and validated case fields, to prevent credential forwarding and unsafe server fetches.
 - Data hook renders only after mount to avoid SSR hydration mismatches, since data is fetched client-side.
 - Store coordinates live in `src/lib/filters.tsx` because n8n rows carry no location fields.
