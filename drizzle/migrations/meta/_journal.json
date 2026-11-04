@@ -15,6 +15,13 @@
       "when": 1793786501959,
       "tag": "0001_n8n_connection_events",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1793808033826,
+      "tag": "0002_retailguard_summary",
+      "breakpoints": true
     }
   ]
 }
