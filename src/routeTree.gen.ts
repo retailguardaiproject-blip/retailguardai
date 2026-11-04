@@ -13,6 +13,7 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as CasesRouteImport } from './routes/cases'
 import { Route as SettingsRouteImport } from './routes/settings'
 import { Route as StoresRouteImport } from './routes/stores'
+import { Route as ApiPublicReceiveSummaryRouteImport } from './routes/api/public/receive-summary'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -34,18 +35,25 @@ const StoresRoute = StoresRouteImport.update({
   path: '/stores',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiPublicReceiveSummaryRoute = ApiPublicReceiveSummaryRouteImport.update({
+  id: '/api/public/receive-summary',
+  path: '/api/public/receive-summary',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/cases': typeof CasesRoute
   '/settings': typeof SettingsRoute
   '/stores': typeof StoresRoute
+  '/api/public/receive-summary': typeof ApiPublicReceiveSummaryRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/cases': typeof CasesRoute
   '/settings': typeof SettingsRoute
   '/stores': typeof StoresRoute
+  '/api/public/receive-summary': typeof ApiPublicReceiveSummaryRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -53,13 +61,21 @@ export interface FileRoutesById {
   '/cases': typeof CasesRoute
   '/settings': typeof SettingsRoute
   '/stores': typeof StoresRoute
+  '/api/public/receive-summary': typeof ApiPublicReceiveSummaryRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/cases' | '/settings' | '/stores'
+  fullPaths:
+    '/' | '/cases' | '/settings' | '/stores' | '/api/public/receive-summary'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/cases' | '/settings' | '/stores'
-  id: '__root__' | '/' | '/cases' | '/settings' | '/stores'
+  to: '/' | '/cases' | '/settings' | '/stores' | '/api/public/receive-summary'
+  id:
+    | '__root__'
+    | '/'
+    | '/cases'
+    | '/settings'
+    | '/stores'
+    | '/api/public/receive-summary'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -67,6 +83,7 @@ export interface RootRouteChildren {
   CasesRoute: typeof CasesRoute
   SettingsRoute: typeof SettingsRoute
   StoresRoute: typeof StoresRoute
+  ApiPublicReceiveSummaryRoute: typeof ApiPublicReceiveSummaryRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -99,6 +116,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof StoresRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/receive-summary': {
+      id: '/api/public/receive-summary'
+      path: '/api/public/receive-summary'
+      fullPath: '/api/public/receive-summary'
+      preLoaderRoute: typeof ApiPublicReceiveSummaryRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -107,6 +131,7 @@ const rootRouteChildren: RootRouteChildren = {
   CasesRoute: CasesRoute,
   SettingsRoute: SettingsRoute,
   StoresRoute: StoresRoute,
+  ApiPublicReceiveSummaryRoute: ApiPublicReceiveSummaryRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

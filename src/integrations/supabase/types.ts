@@ -86,6 +86,39 @@ export type Database = {
         }
         Relationships: []
       }
+      retailguard_summary: {
+        Row: {
+          discount_alerts: number
+          id: string
+          inventory_alerts: number
+          received_at: string
+          records_requiring_review: number
+          records_with_validation_issues: number
+          returns_alerts: number
+          total_records: number
+        }
+        Insert: {
+          discount_alerts?: number
+          id?: string
+          inventory_alerts?: number
+          received_at?: string
+          records_requiring_review?: number
+          records_with_validation_issues?: number
+          returns_alerts?: number
+          total_records?: number
+        }
+        Update: {
+          discount_alerts?: number
+          id?: string
+          inventory_alerts?: number
+          received_at?: string
+          records_requiring_review?: number
+          records_with_validation_issues?: number
+          returns_alerts?: number
+          total_records?: number
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
