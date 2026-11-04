@@ -2,6 +2,7 @@ import { createServerFn } from '@tanstack/react-start';
 import { requireSupabaseAuth } from '@/integrations/supabase/auth-middleware';
 import { connectionSchema } from './n8n-validation';
 import { z } from 'zod';
+import { safeDeliveryError } from './n8n-status';
 
 export const readConnection = createServerFn({method:'POST'}).middleware([requireSupabaseAuth]).handler(async ({context}) => {
  const {data,error}=await context.supabase.from('n8n_settings').select('endpoint,enabled,auth_header').eq('user_id',context.userId).maybeSingle();
@@ -28,27 +29,20 @@ export const testConnection = createServerFn({method:'POST'}).middleware([requir
  const config=await context.supabase.from('n8n_settings').select('*').eq('user_id',context.userId).maybeSingle();
  if(!config.data) throw new Error('Save an endpoint first.');
  const {supabaseAdmin}=await import('@/integrations/supabase/client.server');
- const credential=await supabaseAdmin.from('n8n_credentials').select('encrypted_token').eq('user_id',context.userId).maybeSingle();
- const {cryptToken,requestCases}=await import('./n8n.server');
- const secret=process.env['N8N_CREDENTIAL_ENCRYPTION_KEY'];
- if(credential.data && !secret) throw new Error('Secure credential storage is unavailable.');
- const token=credential.data && secret ? await cryptToken(credential.data.encrypted_token,secret,context.userId,true) : undefined;
  try {
-  const result=await requestCases(config.data.endpoint,config.data.auth_header,token);
+  const {fetchRecordedCases}=await import('./n8n.server');
+  const result=await fetchRecordedCases(supabaseAdmin,context.userId,config.data,'test',process.env['N8N_CREDENTIAL_ENCRYPTION_KEY']);
   if(data.activate) { const update=await context.supabase.from('n8n_settings').update({enabled:true}).eq('user_id',context.userId); if(update.error) throw new Error('Could not activate connection.'); }
   return {ok:true as const,count:result.cases.length,latency:result.latency};
- } catch(error) {return {ok:false as const,message: error instanceof Error && error.message.startsWith('n8n ') ? error.message : 'Connection failed. Check your webhook, credentials, and response format.'};}
+ } catch(error) {return {ok:false as const,message:safeDeliveryError(error)};}
+
 });
 export const liveSummary = createServerFn({method:'POST'}).middleware([requireSupabaseAuth]).handler(async ({context}) => {
  const config=await context.supabase.from('n8n_settings').select('*').eq('user_id',context.userId).maybeSingle();
  if(!config.data?.enabled) return {live:false as const,cases:[]};
  const {supabaseAdmin}=await import('@/integrations/supabase/client.server');
- const credential=await supabaseAdmin.from('n8n_credentials').select('encrypted_token').eq('user_id',context.userId).maybeSingle();
- const secret=process.env['N8N_CREDENTIAL_ENCRYPTION_KEY'];
- if(credential.data && !secret) throw new Error('Secure credential storage is unavailable.');
- const {cryptToken,requestCases}=await import('./n8n.server');
- const token=credential.data && secret ? await cryptToken(credential.data.encrypted_token,secret,context.userId,true) : undefined;
- const result=await requestCases(config.data.endpoint,config.data.auth_header,token);
+ const {fetchRecordedCases}=await import('./n8n.server');
+ const result=await fetchRecordedCases(supabaseAdmin,context.userId,config.data,'delivery',process.env['N8N_CREDENTIAL_ENCRYPTION_KEY']);
  return {live:true as const,cases:result.cases};
 });
 export const disconnectConnection = createServerFn({method:'POST'}).middleware([requireSupabaseAuth]).handler(async ({context}) => {
@@ -56,4 +50,16 @@ export const disconnectConnection = createServerFn({method:'POST'}).middleware([
  await supabaseAdmin.from('n8n_credentials').delete().eq('user_id',context.userId);
  const result=await context.supabase.from('n8n_settings').delete().eq('user_id',context.userId);
  if(result.error) throw new Error('Could not disconnect.'); return {ok:true};
+});
+
+export const readDeliveryStatus = createServerFn({method:'POST'}).middleware([requireSupabaseAuth]).handler(async ({context}) => {
+ const columns='id,kind,success,case_count,latency_ms,message,occurred_at' as const;
+ const base=()=>context.supabase.from('n8n_events').select(columns).eq('user_id',context.userId);
+ const [delivery,tests,errors]=await Promise.all([
+  base().eq('kind','delivery').eq('success',true).order('occurred_at',{ascending:false}).limit(1),
+  base().eq('kind','test').order('occurred_at',{ascending:false}).limit(5),
+  base().eq('kind','delivery').eq('success',false).order('occurred_at',{ascending:false}).limit(5),
+ ]);
+ if(delivery.error||tests.error||errors.error) throw new Error('Could not load delivery history.');
+ return {lastDelivery:delivery.data?.[0]??null,tests:tests.data??[],errors:errors.data??[]};
 });
