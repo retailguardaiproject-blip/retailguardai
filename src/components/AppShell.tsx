@@ -4,6 +4,7 @@ import { LayoutDashboard, Search, Store, ChevronsLeft, ShieldCheck, UserCheck } 
 import { useFilters } from "@/lib/filters";
 import { useDashboardData } from "@/hooks/useDashboardData";
 import { cn } from "@/lib/utils";
+import { AuthButton } from "./AuthButton";
 
 const NAV = [
   { to: "/", label: "Overview", icon: LayoutDashboard },
@@ -55,6 +56,7 @@ export function AppShell({ children }: { children: ReactNode }) {
           <Sel label="Region" value={f.region} onChange={f.setRegion} opts={[["all", "All regions"], ["ne", "Northeast"]]} />
           <Sel label="Time" value={f.range} onChange={f.setRange} opts={[["24h", "Last 24h"], ["7d", "Last 7 days"]]} />
           <Sel label="Category" value={f.category} onChange={f.setCategory} opts={[["all", "All categories"], ...cats.map((c) => [c, c] as [string, string])]} />
+          <div className="ml-auto"><AuthButton /></div>
         </header>
         <main className="flex-1 p-6">{children}</main>
       </div>
