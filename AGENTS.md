@@ -10,10 +10,6 @@
 <!-- LOVABLE:END -->
 
 ## Architecture
-- Live case data is fetched from n8n only through authenticated server functions; disconnected users receive spreadsheet samples, and live failures never silently substitute samples.
-- Store connection settings per user with owner-scoped RLS, and store AES-GCM encrypted credentials in a service-only table so browser reads cannot expose them.
-- Only HTTPS production webhooks on n8n Cloud are accepted, with redirects disabled, bounded responses, timeouts, and validated case fields, to prevent credential forwarding and unsafe server fetches.
-- Data hook renders only after mount to avoid SSR hydration mismatches, since data is fetched client-side.
+- The browser never calls n8n; the Overview reads only the stored n8n summaries, and case-level pages use bundled spreadsheet reference rows.
 - Store coordinates live in `src/lib/filters.tsx` because n8n rows carry no location fields.
-- Record n8n fetch and test outcomes in service-written, owner-readable event history; persist only allowlisted error messages, and distinguish successful deliveries from connection tests.
 - n8n pushes summaries to /api/public/receive-summary, verified by an x-api-key shared secret and written only by the server; signed-in users read the latest row.

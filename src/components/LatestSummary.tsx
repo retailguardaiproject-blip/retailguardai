@@ -1,4 +1,5 @@
 import { useQuery } from '@tanstack/react-query';
+import { Link } from '@tanstack/react-router';
 import { useServerFn } from '@tanstack/react-start';
 import { latestSummary } from '@/lib/summary.functions';
 import { useConnectionSession } from '@/hooks/useConnection';
@@ -17,7 +18,11 @@ export function LatestSummary() {
   const signedIn = useConnectionSession();
   const read = useServerFn(latestSummary);
   const q = useQuery({ queryKey: ['latest-summary', signedIn], queryFn: () => read(), enabled: signedIn, refetchInterval: 30000, retry: false });
-  if (!signedIn) return null;
+  if (!signedIn) return (
+    <Panel title="Latest n8n summary">
+      <p className="text-sm text-muted-foreground"><Link to="/login" className="text-primary">Sign in</Link> to view the latest summary.</p>
+    </Panel>
+  );
   const row = q.data;
   return (
     <Panel title="Latest n8n summary" className="mb-4">

@@ -11,7 +11,7 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as CasesRouteImport } from './routes/cases'
-import { Route as SettingsRouteImport } from './routes/settings'
+import { Route as LoginRouteImport } from './routes/login'
 import { Route as StoresRouteImport } from './routes/stores'
 import { Route as ApiPublicReceiveSummaryRouteImport } from './routes/api/public/receive-summary'
 
@@ -25,9 +25,9 @@ const CasesRoute = CasesRouteImport.update({
   path: '/cases',
   getParentRoute: () => rootRouteImport,
 } as any)
-const SettingsRoute = SettingsRouteImport.update({
-  id: '/settings',
-  path: '/settings',
+const LoginRoute = LoginRouteImport.update({
+  id: '/login',
+  path: '/login',
   getParentRoute: () => rootRouteImport,
 } as any)
 const StoresRoute = StoresRouteImport.update({
@@ -44,14 +44,14 @@ const ApiPublicReceiveSummaryRoute = ApiPublicReceiveSummaryRouteImport.update({
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/cases': typeof CasesRoute
-  '/settings': typeof SettingsRoute
+  '/login': typeof LoginRoute
   '/stores': typeof StoresRoute
   '/api/public/receive-summary': typeof ApiPublicReceiveSummaryRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/cases': typeof CasesRoute
-  '/settings': typeof SettingsRoute
+  '/login': typeof LoginRoute
   '/stores': typeof StoresRoute
   '/api/public/receive-summary': typeof ApiPublicReceiveSummaryRoute
 }
@@ -59,21 +59,21 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/cases': typeof CasesRoute
-  '/settings': typeof SettingsRoute
+  '/login': typeof LoginRoute
   '/stores': typeof StoresRoute
   '/api/public/receive-summary': typeof ApiPublicReceiveSummaryRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
-    '/' | '/cases' | '/settings' | '/stores' | '/api/public/receive-summary'
+    '/' | '/cases' | '/login' | '/stores' | '/api/public/receive-summary'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/cases' | '/settings' | '/stores' | '/api/public/receive-summary'
+  to: '/' | '/cases' | '/login' | '/stores' | '/api/public/receive-summary'
   id:
     | '__root__'
     | '/'
     | '/cases'
-    | '/settings'
+    | '/login'
     | '/stores'
     | '/api/public/receive-summary'
   fileRoutesById: FileRoutesById
@@ -81,7 +81,7 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   CasesRoute: typeof CasesRoute
-  SettingsRoute: typeof SettingsRoute
+  LoginRoute: typeof LoginRoute
   StoresRoute: typeof StoresRoute
   ApiPublicReceiveSummaryRoute: typeof ApiPublicReceiveSummaryRoute
 }
@@ -102,11 +102,11 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof CasesRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/settings': {
-      id: '/settings'
-      path: '/settings'
-      fullPath: '/settings'
-      preLoaderRoute: typeof SettingsRouteImport
+    '/login': {
+      id: '/login'
+      path: '/login'
+      fullPath: '/login'
+      preLoaderRoute: typeof LoginRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/stores': {
@@ -129,7 +129,7 @@ declare module '@tanstack/react-router' {
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   CasesRoute: CasesRoute,
-  SettingsRoute: SettingsRoute,
+  LoginRoute: LoginRoute,
   StoresRoute: StoresRoute,
   ApiPublicReceiveSummaryRoute: ApiPublicReceiveSummaryRoute,
 }
