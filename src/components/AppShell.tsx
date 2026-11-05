@@ -1,6 +1,6 @@
 import { Link } from "@tanstack/react-router";
 import { useState, type ReactNode } from "react";
-import { LayoutDashboard, Search, Store, ChevronsLeft, ShieldCheck } from "lucide-react";
+import { LayoutDashboard, Search, Store, ChevronsLeft, ShieldCheck, UserCheck } from "lucide-react";
 import { useFilters } from "@/lib/filters";
 import { useDashboardData } from "@/hooks/useDashboardData";
 import { cn } from "@/lib/utils";
@@ -9,6 +9,7 @@ const NAV = [
   { to: "/", label: "Overview", icon: LayoutDashboard },
   { to: "/cases", label: "Case Explorer", icon: Search },
   { to: "/stores", label: "Store Intelligence", icon: Store },
+  { to: "/admin", label: "Access Review", icon: UserCheck },
 ] as const;
 
 function Sel({ value, onChange, opts, label }: { value: string; onChange: (v: string) => void; opts: [string, string][]; label: string }) {
