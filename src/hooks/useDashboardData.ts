@@ -1,25 +1,16 @@
-import { useQuery } from "@tanstack/react-query";
-import { useEffect, useState } from "react";
-import { useServerFn } from "@tanstack/react-start";
-import { liveSummary } from "@/lib/n8n.functions";
-import { useConnectionSession } from "./useConnection";
-import { fetchSummary } from "@/services/n8nApi";
+import sampleCases from "@/data/sample-cases.json";
 import { useFilters } from "@/lib/filters";
 import { VARIANCE, type AnomalyCase } from "@/lib/types";
 
+// Case-level reference rows from the uploaded spreadsheet (Case Explorer / Store Intelligence).
+// Live n8n results arrive as summaries in the database, not as case rows.
+export const SAMPLE_CASES = sampleCases as AnomalyCase[];
+
 export function useDashboardData() {
-  const [hydrated, setHydrated] = useState(false);
-  useEffect(() => setHydrated(true), []);
-  const signedIn = useConnectionSession();
-  const getLive = useServerFn(liveSummary);
-  const q = useQuery({ enabled: hydrated, queryKey: ["n8n-summary", signedIn], queryFn: async () => {
-    if (signedIn) {const result = await getLive(); if(result.live) return result;}
-    return {live: false, cases: await fetchSummary()};
-  }, refetchInterval: 60_000, retry: false });
   const { category } = useFilters();
-  const all = hydrated ? (q.data?.cases ?? []) : [];
+  const all = SAMPLE_CASES;
   const cases = category === "all" ? all : all.filter((c) => c.Category === category);
-  return { ...q, live: q.data?.live ?? false, isLoading: !hydrated || q.isLoading, all, cases, kpis: computeKpis(cases) };
+  return { all, cases, kpis: computeKpis(cases) };
 }
 
 export function computeKpis(cases: AnomalyCase[]) {
