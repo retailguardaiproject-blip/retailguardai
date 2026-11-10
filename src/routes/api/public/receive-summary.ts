@@ -9,6 +9,8 @@ const payloadSchema = z.object({
   returnsAlerts: count,
   recordsRequiringReview: count,
   recordsWithValidationIssues: count,
+  cases: z.array(z.record(z.string(), z.union([z.string().max(2000), z.number(), z.boolean(), z.null()]))
+    .refine((c) => typeof c['Case ID'] === 'string' || typeof c['Case ID'] === 'number', 'Case ID required')).max(5000).optional(),
 });
 
 function safeEqual(a: string, b: string) {
@@ -26,7 +28,7 @@ export const Route = createFileRoute('/api/public/receive-summary')({
         const provided = request.headers.get('x-api-key') ?? '';
         if (!secret || !safeEqual(provided, secret)) return Response.json({ error: 'Unauthorized' }, { status: 401 });
         const text = await request.text();
-        if (text.length > 100_000) return Response.json({ error: 'Payload too large' }, { status: 413 });
+        if (text.length > 5_000_000) return Response.json({ error: 'Payload too large' }, { status: 413 });
         let json: unknown;
         try { json = JSON.parse(text); } catch { return Response.json({ error: 'Invalid JSON' }, { status: 400 }); }
         const body = Array.isArray(json) ? json[0] : json;
@@ -38,6 +40,7 @@ export const Route = createFileRoute('/api/public/receive-summary')({
           total_records: p.totalRecords, inventory_alerts: p.inventoryAlerts, discount_alerts: p.discountAlerts,
           returns_alerts: p.returnsAlerts, records_requiring_review: p.recordsRequiringReview,
           records_with_validation_issues: p.recordsWithValidationIssues,
+          cases: p.cases ?? null,
         });
         if (error) return Response.json({ error: 'Could not store summary' }, { status: 500 });
         return Response.json({ ok: true });
