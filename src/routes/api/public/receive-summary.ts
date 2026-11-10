@@ -1,17 +1,19 @@
 import { createFileRoute } from '@tanstack/react-router';
 import { z } from 'zod';
+import { countCases, normalizePayload } from '@/lib/case-rules';
 
 const count = z.number().int().min(0).max(100_000_000);
-const payloadSchema = z.object({
+const summarySchema = z.object({
   totalRecords: count,
   inventoryAlerts: count,
   discountAlerts: count,
   returnsAlerts: count,
   recordsRequiringReview: count,
   recordsWithValidationIssues: count,
-  cases: z.array(z.record(z.string(), z.union([z.string().max(2000), z.number(), z.boolean(), z.null()]))
-    .refine((c) => typeof c['Case ID'] === 'string' || typeof c['Case ID'] === 'number', 'Case ID required')).max(5000).optional(),
 });
+const caseSchema = z.record(z.string().max(200), z.union([z.string().max(5000), z.number(), z.boolean(), z.null()]))
+  .refine((c) => typeof c['Case ID'] === 'string' || typeof c['Case ID'] === 'number', 'Case ID required');
+const casesSchema = z.array(caseSchema).max(20000);
 
 function safeEqual(a: string, b: string) {
   const ea = new TextEncoder().encode(a), eb = new TextEncoder().encode(b);
@@ -28,22 +30,31 @@ export const Route = createFileRoute('/api/public/receive-summary')({
         const provided = request.headers.get('x-api-key') ?? '';
         if (!secret || !safeEqual(provided, secret)) return Response.json({ error: 'Unauthorized' }, { status: 401 });
         const text = await request.text();
-        if (text.length > 5_000_000) return Response.json({ error: 'Payload too large' }, { status: 413 });
+        if (text.length > 20_000_000) return Response.json({ error: 'Payload too large' }, { status: 413 });
         let json: unknown;
         try { json = JSON.parse(text); } catch { return Response.json({ error: 'Invalid JSON' }, { status: 400 }); }
-        const body = Array.isArray(json) ? json[0] : json;
-        const parsed = payloadSchema.safeParse(body);
-        if (!parsed.success) return Response.json({ error: 'Invalid summary fields', issues: parsed.error.issues.map(i => i.path.join('.')) }, { status: 400 });
-        const p = parsed.data;
+
+        const { summary, cases: rawCases } = normalizePayload(json);
+        let cases: z.infer<typeof casesSchema> | null = null;
+        if (rawCases) {
+          const pc = casesSchema.safeParse(rawCases);
+          if (!pc.success) return Response.json({ error: 'Invalid cases', issues: pc.error.issues.slice(0, 10).map(i => i.path.join('.')) }, { status: 400 });
+          cases = pc.data;
+        }
+        const ps = summarySchema.safeParse(summary ?? {});
+        // Prefer counts computed from delivered cases; fall back to n8n totals when no cases are sent.
+        const p = cases ? countCases(cases) : ps.success ? ps.data : null;
+        if (!p) return Response.json({ error: 'Send case rows or the six summary totals' }, { status: 400 });
+
         const { supabaseAdmin } = await import('@/integrations/supabase/client.server');
         const { error } = await supabaseAdmin.from('retailguard_summary').insert({
           total_records: p.totalRecords, inventory_alerts: p.inventoryAlerts, discount_alerts: p.discountAlerts,
           returns_alerts: p.returnsAlerts, records_requiring_review: p.recordsRequiringReview,
           records_with_validation_issues: p.recordsWithValidationIssues,
-          cases: p.cases ?? null,
+          cases: cases ?? null,
         });
         if (error) return Response.json({ error: 'Could not store summary' }, { status: 500 });
-        return Response.json({ ok: true });
+        return Response.json({ ok: true, totalRecords: p.totalRecords, casesStored: cases?.length ?? 0 });
       },
     },
   },
