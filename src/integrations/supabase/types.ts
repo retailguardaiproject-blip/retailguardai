@@ -88,6 +88,7 @@ export type Database = {
       }
       retailguard_summary: {
         Row: {
+          cases: Json | null
           discount_alerts: number
           id: string
           inventory_alerts: number
@@ -98,6 +99,7 @@ export type Database = {
           total_records: number
         }
         Insert: {
+          cases?: Json | null
           discount_alerts?: number
           id?: string
           inventory_alerts?: number
@@ -108,6 +110,7 @@ export type Database = {
           total_records?: number
         }
         Update: {
+          cases?: Json | null
           discount_alerts?: number
           id?: string
           inventory_alerts?: number
