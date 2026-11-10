@@ -1,6 +1,6 @@
 import { createFileRoute } from '@tanstack/react-router';
 import { z } from 'zod';
-import { countCases, normalizePayload } from '@/lib/case-rules';
+import { classifyCase, countCases, normalizePayload } from '@/lib/case-rules';
 
 const count = z.number().int().min(0).max(100_000_000);
 const summarySchema = z.object({
@@ -39,7 +39,7 @@ export const Route = createFileRoute('/api/public/receive-summary')({
         if (rawCases) {
           const pc = casesSchema.safeParse(rawCases);
           if (!pc.success) return Response.json({ error: 'Invalid cases', issues: pc.error.issues.slice(0, 10).map(i => i.path.join('.')) }, { status: 400 });
-          cases = pc.data;
+          cases = pc.data.map(classifyCase) as z.infer<typeof casesSchema>;
         }
         const ps = summarySchema.safeParse(summary ?? {});
         // Prefer counts computed from delivered cases; fall back to n8n totals when no cases are sent.
@@ -54,7 +54,10 @@ export const Route = createFileRoute('/api/public/receive-summary')({
           cases: cases ?? null,
         });
         if (error) return Response.json({ error: 'Could not store summary' }, { status: 500 });
-        return Response.json({ ok: true, totalRecords: p.totalRecords, casesStored: cases?.length ?? 0 });
+        const rejected = (cases ?? []).filter((c) => c['Data Status'] === 'INVALID_SCHEMA' || c['Data Status'] === 'REVIEW_DATA')
+          .slice(0, 50).map((c) => ({ caseId: c['Case ID'], status: c['Data Status'], error: c['Evidence / Explanation'] }));
+        return Response.json({ ok: true, totalRecords: p.totalRecords, casesStored: cases?.length ?? 0,
+          validationIssues: p.recordsWithValidationIssues, errors: rejected });
       },
     },
   },
