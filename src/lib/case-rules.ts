@@ -21,7 +21,7 @@ export function countCases(cases: Row[]) {
 }
 
 const isCase = (x: unknown): x is Row => !!x && typeof x === 'object' && !Array.isArray(x) && 'Case ID' in (x as Row);
-const unwrap = (x: unknown) => (x && typeof x === 'object' && 'json' in (x as Row) ? (x as Row).json : x);
+const unwrap = (x: unknown) => (x && typeof x === 'object' && 'json' in (x as Row) ? (x as Row)['json'] : x);
 
 // Accepts: an array of cases, an array of n8n items ({json: case}), {cases: [...]}, or a summary object (with optional cases).
 export function normalizePayload(input: unknown): { summary: Row | null; cases: Row[] | null } {
@@ -35,6 +35,7 @@ export function normalizePayload(input: unknown): { summary: Row | null; cases: 
   if (!obj || typeof obj !== 'object') return { summary: null, cases: null };
   const o = obj as Row;
   if (isCase(o)) return { summary: null, cases: [o] };
-  const cases = Array.isArray(o.cases) ? (o.cases.map(unwrap) as Row[]) : null;
+  const raw: unknown = o['cases'];
+  const cases = Array.isArray(raw) ? (raw.map(unwrap) as Row[]) : null;
   return { summary: o, cases };
 }
