@@ -2,7 +2,7 @@ import { Link } from "@tanstack/react-router";
 import { useState, type ReactNode } from "react";
 import { LayoutDashboard, Search, Store, ChevronsLeft, ShieldCheck, UserCheck } from "lucide-react";
 import { useFilters } from "@/lib/filters";
-import { useDashboardData } from "@/hooks/useDashboardData";
+import { useCategories } from "@/hooks/useDashboardData";
 import { cn } from "@/lib/utils";
 import { AuthButton } from "./AuthButton";
 
@@ -27,8 +27,7 @@ function Sel({ value, onChange, opts, label }: { value: string; onChange: (v: st
 export function AppShell({ children }: { children: ReactNode }) {
   const [collapsed, setCollapsed] = useState(false);
   const f = useFilters();
-  const { all } = useDashboardData();
-  const cats = Array.from(new Set(all.map((c) => c.Category)));
+  const cats = useCategories();
 
   return (
     <div className="flex min-h-screen">

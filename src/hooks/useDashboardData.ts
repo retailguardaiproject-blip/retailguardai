@@ -34,6 +34,12 @@ export function useDashboardData() {
   return { all, cases, live: !!live, kpis: computeKpis(cases) };
 }
 
+export function useCategories() {
+  const { data } = useLatestSummary();
+  const all = deliveredCases(data) ?? SAMPLE_CASES;
+  return Array.from(new Set(all.map((c) => c.Category)));
+}
+
 export function computeKpis(cases: AnomalyCase[]) {
   const flagged = cases.filter((c) => c["Review Priority"] !== "No rule-based alert");
   const high = cases.filter((c) => c["Review Priority"] === "High review priority");
