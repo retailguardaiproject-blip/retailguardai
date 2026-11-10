@@ -1,10 +1,6 @@
 import { useState } from 'react';
-import { useQuery } from '@tanstack/react-query';
 import { Link } from '@tanstack/react-router';
-import { useServerFn } from '@tanstack/react-start';
-import { latestSummary } from '@/lib/summary.functions';
-import { useConnectionSession } from '@/hooks/useConnection';
-import { SAMPLE_CASES } from '@/hooks/useDashboardData';
+import { SAMPLE_CASES, deliveredCases, useLatestSummary } from '@/hooks/useDashboardData';
 import { VARIANCE, type AnomalyCase } from '@/lib/types';
 import { cn } from '@/lib/utils';
 import { Panel, PriorityBadge, Variance } from './ui-kit';
@@ -22,10 +18,9 @@ const CARDS = [
 ] as const;
 
 export function LatestSummary() {
-  const signedIn = useConnectionSession();
-  const read = useServerFn(latestSummary);
+  const q = useLatestSummary();
+  const signedIn = q.signedIn;
   const [active, setActive] = useState<string | null>(null);
-  const q = useQuery({ queryKey: ['latest-summary', signedIn], queryFn: () => read(), enabled: signedIn, refetchInterval: 30000, retry: false });
   if (!signedIn) return (
     <Panel title="Latest n8n summary">
       <p className="text-sm text-muted-foreground"><Link to="/login" className="text-primary">Sign in</Link> to view the latest summary.</p>
@@ -33,7 +28,8 @@ export function LatestSummary() {
   );
   const row = q.data;
   const card = CARDS.find((c) => c.key === active);
-  const rows = card ? SAMPLE_CASES.filter(card.match) : [];
+  const live = deliveredCases(row);
+  const rows = card ? (live ?? SAMPLE_CASES).filter(card.match) : [];
   return (
     <Panel title="Latest n8n summary" className="mb-4">
       {q.error ? <p role="alert" className="text-sm text-critical">Summary unavailable.</p>
@@ -48,12 +44,12 @@ export function LatestSummary() {
               </button>
             ))}
           </div>
-          <p className="mt-3 text-xs text-muted-foreground">Received {new Date(row.received_at).toLocaleString()} · click a card for details</p>
+          <p className="mt-3 text-xs text-muted-foreground">Received {new Date(row.received_at).toLocaleString()} · {live ? `${live.length} cases delivered` : 'n8n sent totals only, details show spreadsheet cases'} · click a card for details</p>
           {card && (
             <div role="tabpanel" className="mt-4 rounded-md border border-border p-3">
               <div className="mb-2 flex flex-wrap items-baseline justify-between gap-2">
                 <h3 className="text-sm font-semibold">{card.label}: {row[card.key].toLocaleString()}</h3>
-                <p className="text-xs text-muted-foreground">{card.desc} Showing {rows.length} matching reference cases.</p>
+                <p className="text-xs text-muted-foreground">{card.desc} Showing {rows.length} matching {live ? 'delivered' : 'reference'} cases.</p>
               </div>
               {rows.length === 0 ? <p className="text-sm text-muted-foreground">No matching cases.</p> : (
                 <div className="max-h-96 overflow-auto">
