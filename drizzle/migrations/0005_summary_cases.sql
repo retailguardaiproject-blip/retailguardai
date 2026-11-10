@@ -1,0 +1,1 @@
+ALTER TABLE public.retailguard_summary ADD COLUMN cases jsonb;
