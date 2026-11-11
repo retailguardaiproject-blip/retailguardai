@@ -63,7 +63,8 @@ If you share the Edge Function URL and the shape of your summary JSON, I can con
 
 This project was built with [Lovable](https://lovable.dev).
 
-**Live app**: https://casewise-summary-studio.lovable.app
+**Live app**: https://retailguardai.lovable.app
+
 
 ## Build with Lovable
 
