@@ -5,6 +5,11 @@ import { useFilters } from "@/lib/filters";
 import { latestSummary } from "@/lib/summary.functions";
 import { useConnectionSession } from "@/hooks/useConnection";
 import { VARIANCE, type AnomalyCase } from "@/lib/types";
+import { caseDataStatus, caseIssueType } from "@/lib/case-rules";
+
+type Row = Record<string, unknown>;
+const statusOf = (c: AnomalyCase) => caseDataStatus(c as unknown as Row);
+const issueOf = (c: AnomalyCase) => caseIssueType(c as unknown as Row);
 
 // Reference rows from the uploaded spreadsheet, used only until n8n delivers case rows.
 export const SAMPLE_CASES = sampleCases as AnomalyCase[];
@@ -26,12 +31,24 @@ export function deliveredCases(row: { cases?: unknown } | null | undefined): Ano
 }
 
 export function useDashboardData() {
-  const { category } = useFilters();
+  const { category, dataStatus, issueType } = useFilters();
   const { data } = useLatestSummary();
   const live = deliveredCases(data);
   const all = live ?? SAMPLE_CASES;
-  const cases = category === "all" ? all : all.filter((c) => c.Category === category);
+  const cases = all.filter((c) =>
+    (category === "all" || c.Category === category) &&
+    (dataStatus === "all" || statusOf(c) === dataStatus) &&
+    (issueType === "all" || issueOf(c) === issueType));
   return { all, cases, live: !!live, kpis: computeKpis(cases) };
+}
+
+// Distinct Data Status values and issue-type tags present in the current cases, for the header filters.
+export function useCaseFacets() {
+  const { data } = useLatestSummary();
+  const all = deliveredCases(data) ?? SAMPLE_CASES;
+  const statuses = Array.from(new Set(all.map(statusOf))).sort();
+  const issueTypes = Array.from(new Set(all.map(issueOf).filter(Boolean))).sort();
+  return { statuses, issueTypes };
 }
 
 export function useCategories() {
