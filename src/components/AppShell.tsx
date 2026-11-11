@@ -2,7 +2,7 @@ import { Link } from "@tanstack/react-router";
 import { useState, type ReactNode } from "react";
 import { LayoutDashboard, Search, Store, ChevronsLeft, ShieldCheck, UserCheck } from "lucide-react";
 import { useFilters } from "@/lib/filters";
-import { useCategories } from "@/hooks/useDashboardData";
+import { useCategories, useCaseFacets } from "@/hooks/useDashboardData";
 import { cn } from "@/lib/utils";
 import { AuthButton } from "./AuthButton";
 
@@ -28,6 +28,7 @@ export function AppShell({ children }: { children: ReactNode }) {
   const [collapsed, setCollapsed] = useState(false);
   const f = useFilters();
   const cats = useCategories();
+  const { statuses, issueTypes } = useCaseFacets();
 
   return (
     <div className="flex min-h-screen">
@@ -55,6 +56,8 @@ export function AppShell({ children }: { children: ReactNode }) {
           <Sel label="Region" value={f.region} onChange={f.setRegion} opts={[["all", "All regions"], ["ne", "Northeast"]]} />
           <Sel label="Time" value={f.range} onChange={f.setRange} opts={[["24h", "Last 24h"], ["7d", "Last 7 days"]]} />
           <Sel label="Category" value={f.category} onChange={f.setCategory} opts={[["all", "All categories"], ...cats.map((c) => [c, c] as [string, string])]} />
+          <Sel label="Status" value={f.dataStatus} onChange={f.setDataStatus} opts={[["all", "All statuses"], ...statuses.map((s) => [s, s] as [string, string])]} />
+          <Sel label="Issue" value={f.issueType} onChange={f.setIssueType} opts={[["all", "All issues"], ...issueTypes.map((t) => [t, t] as [string, string])]} />
           <div className="ml-auto"><AuthButton /></div>
         </header>
         <main className="flex-1 p-6">{children}</main>
