@@ -88,8 +88,14 @@ export function classifyCase(input: Row): Classified {
     'Evidence / Explanation': msg ?? String(c['Evidence / Explanation'] ?? '') } as Classified;
 }
 
-// Data Status of a case row; spreadsheet reference rows have no such column and count as Valid.
-export const caseDataStatus = (c: Row) => f(c, 'Data Status') || 'Valid';
+// Data Status of a case row. Spreadsheet reference rows carry a provenance note
+// ("Source fields plus clearly labelled synthetic stock movements") instead of a
+// validation status; those count as Valid.
+const PROVENANCE_NOTE = 'Source fields plus clearly labelled synthetic stock movements';
+export const caseDataStatus = (c: Row) => {
+  const s = f(c, 'Data Status');
+  return !s || s === PROVENANCE_NOTE ? 'Valid' : s;
+};
 
 // First bracketed tag in the evidence text, e.g. [SCHEMA ERROR], [SECURITY ALERT], [NOTICE].
 export const caseIssueType = (c: Row) => f(c, 'Evidence / Explanation').match(/^\[([^\]]+)\]/)?.[1] ?? '';
