@@ -4,6 +4,8 @@ type Filters = {
   region: string; setRegion: (v: string) => void;
   range: string; setRange: (v: string) => void;
   category: string; setCategory: (v: string) => void;
+  dataStatus: string; setDataStatus: (v: string) => void;
+  issueType: string; setIssueType: (v: string) => void;
 };
 const Ctx = createContext<Filters | null>(null);
 
@@ -11,7 +13,9 @@ export function FiltersProvider({ children }: { children: ReactNode }) {
   const [region, setRegion] = useState("all");
   const [range, setRange] = useState("7d");
   const [category, setCategory] = useState("all");
-  return <Ctx.Provider value={{ region, setRegion, range, setRange, category, setCategory }}>{children}</Ctx.Provider>;
+  const [dataStatus, setDataStatus] = useState("all");
+  const [issueType, setIssueType] = useState("all");
+  return <Ctx.Provider value={{ region, setRegion, range, setRange, category, setCategory, dataStatus, setDataStatus, issueType, setIssueType }}>{children}</Ctx.Provider>;
 }
 
 export function useFilters() {

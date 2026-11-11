@@ -88,6 +88,12 @@ export function classifyCase(input: Row): Classified {
     'Evidence / Explanation': msg ?? String(c['Evidence / Explanation'] ?? '') } as Classified;
 }
 
+// Data Status of a case row; spreadsheet reference rows have no such column and count as Valid.
+export const caseDataStatus = (c: Row) => f(c, 'Data Status') || 'Valid';
+
+// First bracketed tag in the evidence text, e.g. [SCHEMA ERROR], [SECURITY ALERT], [NOTICE].
+export const caseIssueType = (c: Row) => f(c, 'Evidence / Explanation').match(/^\[([^\]]+)\]/)?.[1] ?? '';
+
 export function countCases(cases: Row[]) {
   return {
     totalRecords: cases.length,
