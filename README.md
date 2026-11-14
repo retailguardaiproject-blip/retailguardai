@@ -76,7 +76,7 @@ Configure the final **HTTP Request** node in your n8n workflow to push data to L
   "recordsRequiringReview": 379,
   "recordsWithValidationIssues": 32
 }
-
+```
 ### 3.Prompts used for Website building
 
 Create RetailGuard AI, an inventory anomaly
@@ -88,7 +88,7 @@ Page 2: Case Explorer & Store Map (Reference: Image 2) Recreate the split-screen
 Mandatory Data Architecture (n8n Webhook Integration) The UI must NOT use mock data for its final state or connect to Supabase for inventory data. It must consume data from an n8n webhook. API Service: Create src/services/n8nApi.ts that fetches from import.meta.env.VITE_N8N_SUMMARY_API_URL via a GET request. Data Types: Define AnomalyCase with exact fields: Case ID, Store ID, Product ID, Category, Expected Closing Stock, Synthetic Actual Closing Stock, Inventory Variance (actual - expected), Review Priority ("High review priority", "Review", "No rule-based alert"), Evidence / Explanation, and Recommended Next Check. State Management: Use a React hook (useDashboardData.ts) to fetch and store the n8n data. Apply this data directly to the KPI cards, the Case Explorer table, and the AI Investigation text panels.
 Implementation Steps Scaffold the dark-mode theme, sidebar, and routing. Build the Overview page widgets (Gauge, KPIs, AI Text Box, Line Chart). Build the split-screen Case Explorer with the dark map. Implement the useDashboardData hook. While VITE_N8N_SUMMARY_API_URL is empty, use a 5-item mock array matching the AnomalyCase interface. Ensure all charts, tables, and text panels dynamically consume the context data so the UI comes alive as soon as the n8n URL is provided.
 
-Casewise Summary Studio is only partly built. The dark theme, the n8n data connection and the 5 sample cases are in place, but none of the screens exist yet. The app still opens to the blank starter page.
+RetailGuardAi is only partly built. The dark theme, the n8n data connection and the 5 sample cases are in place, but none of the screens exist yet. The app still opens to the blank starter page.
 
 Done so far:
 - Dark theme: charcoal panels with teal highlights, plus red, orange and green for case status.
