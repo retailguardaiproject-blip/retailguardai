@@ -27,7 +27,7 @@ Still to build:
 Should I continue building the pages?
 
 
-# Casewise Summary Studio
+# RetailGuardAi
 
 Your approach is right: an HTTP Request node (POST) after the summary node, sending to an endpoint on the Lovable side. The trick is that Lovable needs something to receive the data. There are two common patterns.
 
