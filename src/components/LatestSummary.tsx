@@ -22,7 +22,7 @@ export function LatestSummary() {
   const signedIn = q.signedIn;
   const [active, setActive] = useState<string | null>(null);
   if (!signedIn) return (
-    <Panel title="RetailGaurdAI's summary">
+    <Panel title="RetailGuardAI's summary">
       <p className="text-sm text-muted-foreground"><Link to="/login" className="text-primary">Sign in</Link> to view the latest summary.</p>
     </Panel>
   );
@@ -31,7 +31,7 @@ export function LatestSummary() {
   const live = deliveredCases(row);
   const rows = card ? (live ?? SAMPLE_CASES).filter(card.match) : [];
   return (
-    <Panel title="RetailGaurdAI's summary" className="mb-4">
+    <Panel title="RetailGuardAI's summary" className="mb-4">
       {q.error ? <p role="alert" className="text-sm text-critical">Summary unavailable.</p>
         : !row ? <p className="text-sm text-muted-foreground">{q.isLoading ? 'Loading…' : 'No summary received from n8n yet.'}</p>
         : <>
