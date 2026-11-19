@@ -27,7 +27,7 @@ export const Route = createFileRoute('/api/public/receive-summary')({
     handlers: {
       POST: async ({ request }) => {
         const secret = process.env['N8N_SUMMARY_SECRET'];
-        const provided = request.headers.get('x-api-key') ?? '';
+        const provided = request.headers.get('x_api_key') ?? request.headers.get('x-api-key') ?? '';
         if (!secret || !safeEqual(provided, secret)) return Response.json({ error: 'Unauthorized' }, { status: 401 });
         const text = await request.text();
         if (text.length > 20_000_000) return Response.json({ error: 'Payload too large' }, { status: 413 });
