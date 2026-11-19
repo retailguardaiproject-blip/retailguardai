@@ -12,6 +12,10 @@ const statusOf = (c: AnomalyCase) => caseDataStatus(c as unknown as Row);
 const issueOf = (c: AnomalyCase) => caseIssueType(c as unknown as Row);
 
 // Reference rows from the uploaded spreadsheet, used only until n8n delivers case rows.
+// Issue filter levels map to Review Priority (same labels as the severity badge).
+export const severityOf = (c: AnomalyCase) =>
+  c["Review Priority"] === "High review priority" ? "critical" : c["Review Priority"] === "Review" ? "review" : "normal";
+
 export const SAMPLE_CASES = sampleCases as AnomalyCase[];
 
 export function useLatestSummary() {
@@ -38,7 +42,7 @@ export function useDashboardData() {
   const cases = all.filter((c) =>
     (category === "all" || c.Category === category) &&
     (dataStatus === "all" || statusOf(c) === dataStatus) &&
-    (issueType === "all" || issueOf(c) === issueType));
+    (issueType === "all" || severityOf(c) === issueType));
   return { all, cases, live: !!live, kpis: computeKpis(cases) };
 }
 
