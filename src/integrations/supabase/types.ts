@@ -14,6 +14,27 @@ export type Database = {
   }
   public: {
     Tables: {
+      case_work: {
+        Row: {
+          case_id: string
+          note: string
+          status: string
+          user_id: string
+        }
+        Insert: {
+          case_id: string
+          note?: string
+          status?: string
+          user_id: string
+        }
+        Update: {
+          case_id?: string
+          note?: string
+          status?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       n8n_credentials: {
         Row: {
           encrypted_token: string

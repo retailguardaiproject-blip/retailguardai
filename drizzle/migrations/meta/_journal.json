@@ -43,6 +43,13 @@
       "when": 1794292424680,
       "tag": "0005_summary_cases",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1795074286039,
+      "tag": "0006_private_case_work",
+      "breakpoints": true
     }
   ]
 }
