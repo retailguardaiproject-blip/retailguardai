@@ -113,13 +113,14 @@ function Overview() {
       </Panel>
 
       <Panel title="AI Investigation Summary" className="border-primary/60 glow-primary">
-        {latestHigh ? (
+        {sel ? (
           <>
-            <p className="mb-2 font-mono text-xs text-primary">{latestHigh["Case ID"]} · {latestHigh["Store ID"]}</p>
-            <p className="text-sm leading-relaxed">{latestHigh["Evidence / Explanation"]}</p>
-            <p className="mt-3 text-xs text-muted-foreground">Next check: {latestHigh["Recommended Next Check"]}</p>
+            <p className="mb-2 font-mono text-xs text-primary">{sel["Case ID"]} · {sel["Store ID"]}</p>
+            <div className="mb-2"><PriorityBadge p={sel["Review Priority"]} /></div>
+            <p className="text-sm leading-relaxed">{sel["Evidence / Explanation"]}</p>
+            <p className="mt-3 text-xs text-muted-foreground">Next check: {sel["Recommended Next Check"]}</p>
           </>
-        ) : <p className="text-sm text-muted-foreground">No high-priority anomalies.</p>}
+        ) : <p className="text-sm text-muted-foreground">No cases to show.</p>}
       </Panel>
 
       <Panel title="Global Anomaly Radar">
