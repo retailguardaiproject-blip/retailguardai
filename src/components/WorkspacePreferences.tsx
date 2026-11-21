@@ -15,7 +15,7 @@ export function WorkspacePreferences({ children }: { children: ReactNode }) {
     } catch { /* Storage may be disabled. */ }
   }, []);
   useEffect(() => {
-    document.documentElement.dataset.theme = theme;
+    document.documentElement.dataset['theme'] = theme;
   }, [theme]);
   const updateTheme = () => {
     const next = theme === 'dark' ? 'light' : 'dark';
