@@ -33,7 +33,7 @@ RetailGuard AI utilizes a "Push" architecture to seamlessly deliver long-running
 
 ## 🔄 n8n Workflow
 
-<img width="1024" height="555" alt="PHOTO-2026-11-14-11-36-02" src="https://github.com/user-attachments/assets/c8b91ff8-6c4f-4178-a131-285a442a0042" />
+<img width="3002" height="1612" alt="image" src="https://github.com/user-attachments/assets/51310148-fd0a-4659-9b00-d7b7dc76b4a1" />
 
 ![RetailGuard AI n8n Workflow](./path/to/your/n8n-workflow-screenshot.png)
 
