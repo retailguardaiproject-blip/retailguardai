@@ -14,6 +14,8 @@ export const Route = createFileRoute("/cases")({
       { name: "description", content: "Search anomaly cases and locate stores on the map." },
       { property: "og:title", content: "Case Explorer · RetailGuard AI" },
       { property: "og:description", content: "Search anomaly cases and locate stores on the map." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary" },
     ],
   }),
   component: Cases,

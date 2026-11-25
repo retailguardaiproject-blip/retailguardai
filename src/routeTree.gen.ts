@@ -14,6 +14,7 @@ import { Route as AdminRouteImport } from './routes/admin'
 import { Route as CasesRouteImport } from './routes/cases'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as StoresRouteImport } from './routes/stores'
+import { Route as ApiPublicLatestSummaryRouteImport } from './routes/api/public/latest-summary'
 import { Route as ApiPublicReceiveSummaryRouteImport } from './routes/api/public/receive-summary'
 
 const IndexRoute = IndexRouteImport.update({
@@ -41,6 +42,11 @@ const StoresRoute = StoresRouteImport.update({
   path: '/stores',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiPublicLatestSummaryRoute = ApiPublicLatestSummaryRouteImport.update({
+  id: '/api/public/latest-summary',
+  path: '/api/public/latest-summary',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiPublicReceiveSummaryRoute = ApiPublicReceiveSummaryRouteImport.update({
   id: '/api/public/receive-summary',
   path: '/api/public/receive-summary',
@@ -53,6 +59,7 @@ export interface FileRoutesByFullPath {
   '/cases': typeof CasesRoute
   '/login': typeof LoginRoute
   '/stores': typeof StoresRoute
+  '/api/public/latest-summary': typeof ApiPublicLatestSummaryRoute
   '/api/public/receive-summary': typeof ApiPublicReceiveSummaryRoute
 }
 export interface FileRoutesByTo {
@@ -61,6 +68,7 @@ export interface FileRoutesByTo {
   '/cases': typeof CasesRoute
   '/login': typeof LoginRoute
   '/stores': typeof StoresRoute
+  '/api/public/latest-summary': typeof ApiPublicLatestSummaryRoute
   '/api/public/receive-summary': typeof ApiPublicReceiveSummaryRoute
 }
 export interface FileRoutesById {
@@ -70,6 +78,7 @@ export interface FileRoutesById {
   '/cases': typeof CasesRoute
   '/login': typeof LoginRoute
   '/stores': typeof StoresRoute
+  '/api/public/latest-summary': typeof ApiPublicLatestSummaryRoute
   '/api/public/receive-summary': typeof ApiPublicReceiveSummaryRoute
 }
 export interface FileRouteTypes {
@@ -80,6 +89,7 @@ export interface FileRouteTypes {
     | '/cases'
     | '/login'
     | '/stores'
+    | '/api/public/latest-summary'
     | '/api/public/receive-summary'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -88,6 +98,7 @@ export interface FileRouteTypes {
     | '/cases'
     | '/login'
     | '/stores'
+    | '/api/public/latest-summary'
     | '/api/public/receive-summary'
   id:
     | '__root__'
@@ -96,6 +107,7 @@ export interface FileRouteTypes {
     | '/cases'
     | '/login'
     | '/stores'
+    | '/api/public/latest-summary'
     | '/api/public/receive-summary'
   fileRoutesById: FileRoutesById
 }
@@ -105,6 +117,7 @@ export interface RootRouteChildren {
   CasesRoute: typeof CasesRoute
   LoginRoute: typeof LoginRoute
   StoresRoute: typeof StoresRoute
+  ApiPublicLatestSummaryRoute: typeof ApiPublicLatestSummaryRoute
   ApiPublicReceiveSummaryRoute: typeof ApiPublicReceiveSummaryRoute
 }
 
@@ -145,6 +158,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof StoresRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/latest-summary': {
+      id: '/api/public/latest-summary'
+      path: '/api/public/latest-summary'
+      fullPath: '/api/public/latest-summary'
+      preLoaderRoute: typeof ApiPublicLatestSummaryRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/public/receive-summary': {
       id: '/api/public/receive-summary'
       path: '/api/public/receive-summary'
@@ -161,6 +181,7 @@ const rootRouteChildren: RootRouteChildren = {
   CasesRoute: CasesRoute,
   LoginRoute: LoginRoute,
   StoresRoute: StoresRoute,
+  ApiPublicLatestSummaryRoute: ApiPublicLatestSummaryRoute,
   ApiPublicReceiveSummaryRoute: ApiPublicReceiveSummaryRoute,
 }
 export const routeTree = rootRouteImport

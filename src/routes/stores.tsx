@@ -11,6 +11,8 @@ export const Route = createFileRoute("/stores")({
       { name: "description", content: "Per-store anomaly counts and net inventory variance." },
       { property: "og:title", content: "Store Intelligence · RetailGuard AI" },
       { property: "og:description", content: "Per-store anomaly counts and net inventory variance." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary" },
     ],
   }),
   component: Stores,
