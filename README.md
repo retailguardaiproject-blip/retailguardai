@@ -1,5 +1,9 @@
-# RetailGuard AI
-[For LogeshwariRetailGuardAI_Inventory Investigation_original.json](https://github.com/user-attachments/files/34842247/For.LogeshwariRetailGuardAI_Inventory.Investigation_original.json)
+# RetailGuard AI links
+
+Lovable website URL :   https://retailguardai.lovable.app
+Vercel website URL  :   https://retailguardai-zeta.vercel.app
+Loom video link     :   https://www.loom.com/share/31d1db4d5eba4f21b52a9ac58c8a8977
+N8N workflow json   :   file:///Users/logeshwari/Documents/AgenticAI/AgenticAI/n8n_project1/retailgaurdai_complete.json
 
 
 # RetailGuard AI
