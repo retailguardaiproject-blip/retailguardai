@@ -1,4 +1,5 @@
 # Roadmap
+- [x] Add shared-key-protected latest-summary GET endpoint for Vercel with stored metrics and report rows
 - [ ] Add theme switching, saved filter presets, table density, CSV export, and private case notes/triage
 - [x] RetailGuard AI dashboard from uploaded prompt (dark UI, overview, case explorer + map, stores, settings)
 - [x] Add saved n8n endpoint settings and secure Test & connect, with encrypted credentials and signed-in access

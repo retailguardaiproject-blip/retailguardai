@@ -13,3 +13,4 @@
 - The browser never calls n8n; the Overview reads only the stored n8n summaries, and case-level pages use bundled spreadsheet reference rows.
 - Store coordinates live in `src/lib/filters.tsx` because n8n rows carry no location fields.
 - n8n pushes summaries to /api/public/receive-summary, verified by an x-api-key shared secret and written only by the server; signed-in users read the latest row.
+- External servers read the latest stored summary through GET /api/public/latest-summary using the existing summary shared secret; authorize before loading the privileged client, disable response caching, and project report fields to exclude unrelated private data.
