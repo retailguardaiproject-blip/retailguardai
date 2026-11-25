@@ -1,9 +1,9 @@
-# RetailGuard AI links
+## RetailGuard AI links
 
-Lovable website URL :   https://retailguardai.lovable.app
-Vercel website URL  :   https://retailguardai-zeta.vercel.app
-Loom video link     :   https://www.loom.com/share/31d1db4d5eba4f21b52a9ac58c8a8977
-N8N workflow json   :   file:///Users/logeshwari/Documents/AgenticAI/AgenticAI/n8n_project1/retailgaurdai_complete.json
+# Lovable website URL :   https://retailguardai.lovable.app
+# Vercel website URL  :   https://retailguardai-zeta.vercel.app
+# Loom video link     :   https://www.loom.com/share/31d1db4d5eba4f21b52a9ac58c8a8977
+# N8N workflow json   :   file:///Users/logeshwari/Documents/AgenticAI/AgenticAI/n8n_project1/retailgaurdai_complete.json
 
 
 # RetailGuard AI
