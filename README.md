@@ -190,6 +190,43 @@ npm run dev
 <img width="1508" height="528" alt="Screenshot 2026-11-26 at 10 20 13 AM" src="https://github.com/user-attachments/assets/9d829603-fe7f-4261-8932-b58b35fb088d" />
 
 
+# Vercel Deployment
+
+## step 1
+
+**Github repo** : Exported the entire codebase from Lovable to retailguardaiproject Github repository
+
+## step 2
+
+**Deployment to vercel** : Created an account in vercel and connected GitHub in the connectors and deployed the code in vercel.
+
+<img width="1493" height="854" alt="Screenshot 2026-11-26 at 12 26 21 PM" src="https://github.com/user-attachments/assets/4281858a-dd13-4df0-9489-065079af6907" />
+
+Vercel deployed the application and created the production endpoint
+
+## Vercel Dashboard
+
+<img width="1495" height="946" alt="Screenshot 2026-11-26 at 12 28 21 PM" src="https://github.com/user-attachments/assets/6e7975c3-55ed-402b-80b6-b61d29601091" />
+
+
+# Errors encountered/Incident Summary/Resolution
+
+## ERROR #1
+
+**N8N and Lovable Integration failed**
+
+## ERROR #2
+
+**Vercel was not being updated with the Latest Retailguard summary**
+
+
+
+
+
+
+
+
+
 
 
 
