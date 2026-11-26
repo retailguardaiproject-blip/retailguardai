@@ -1,5 +1,6 @@
 # RetailGuard AI
 **PRODUCT REQUIREMENTS DOCUMENT  |  GENAI HACKATHON**
+
 From Inventory Loss to Investigation Intelligence
 Working draft for team review • 19 October 2026
 Document control
@@ -15,10 +16,12 @@ Source template	ScamShield AI PRD shared by user (10-section format)
 Basis	RetailGuard poster, previous team discussions, starter-package scope and proposed roadmap
 
 **1. Executive summary**
+
 RetailGuard AI is a proposed decision-support tool for retail managers who need to identify unusual inventory, return and discount patterns without manually inspecting every transaction. The MVP will ingest synthetic retail data, validate inputs, calculate explainable anomaly indicators, prioritise review cases and use a large language model (LLM) to produce evidence-grounded investigation briefs. A manager remains responsible for interpreting findings and closing cases.
 The initial delivery approach is Python + Pandas for deterministic calculations, Streamlit for the interface, a single LLM API for investigation briefs, GitHub for collaboration and a simple prototype deployment. The team should first prove a working inventory variance flow before adding returns, discounts and GenAI.
 
 **2. Problem statement and opportunity**
+
 Area	RetailGuard-specific definition
 Problem	Retail operations teams face high volumes of stock movements, sales, returns and discounts; manually identifying significant exceptions and deciding what to check next can be slow.
 Evidence available	The poster provides an illustrative Store S3 scenario. No verified retailer baseline, loss amount or pilot study has been supplied; all numerical examples must be labelled synthetic or illustrative.
@@ -27,6 +30,7 @@ Gap	Basic reports show exceptions but may not combine supporting records, distin
 Opportunity	Prioritise the most relevant cases and produce structured, evidence-linked investigation briefs for a manager to review.
 
 **3. Goals, non-goals and success metrics**
+
 Type	Proposed requirement	Validation / measure
 Product goal	Detect and display inventory shortage exceptions based on agreed rules.	Expected results match manually verified synthetic reference cases.
 GenAI goal	Produce an investigation brief grounded in supplied case data.	Review 20 sample briefs for correct numbers, traceable evidence and appropriate uncertainty (proposed evaluation set).
@@ -40,6 +44,7 @@ Non-goal	Guaranteed reductions in fraud, losses or review time.	Requires later b
 Important: poster impact figures such as ≥65%, ≤15 minutes or ≥70% were not demonstrated results and must not be presented as achieved KPIs. Replace them with measured pilot results only when available.
 
 **4. Users, personas and use cases**
+
 Primary persona (hypothetical): Store Operations Manager — supervises inventory accuracy and investigates exceptions across stores; needs a ranked list of cases and clear evidence without reviewing every line item.
 Secondary persona (hypothetical): Retail Loss Prevention / Internal Audit Analyst — reviews unusual return and discount activity and documents investigation outcomes.
 Hero use case — Store S3 (illustrative)
@@ -54,6 +59,7 @@ US-03 — Review investigation brief
 As a manager, I want an evidence-based explanation and suggested checks so I can decide what to investigate.	The brief cites case ID and actual input values; distinguishes observation from hypothesis; lists missing evidence and suggested next checks; never asserts theft or fraud; allows human review/status update.
 
 **5. Domain context and data**
+
 Glossary
 Term	Meaning
 Expected closing stock	Book quantity after all modelled stock movements.
