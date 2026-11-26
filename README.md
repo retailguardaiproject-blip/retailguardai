@@ -172,3 +172,25 @@ cd <repository-name>
 npm i
 npm run dev
 ```
+
+## RetailGuardAi Dashboard - Overview
+
+<img width="1505" height="853" alt="Screenshot 2026-11-26 at 9 46 10 AM" src="https://github.com/user-attachments/assets/98589e51-33a1-452b-b8e5-8c4bfa401689" />
+
+## CaseExplorer page
+
+<img width="1488" height="831" alt="Screenshot 2026-11-26 at 9 54 22 AM" src="https://github.com/user-attachments/assets/28831c9f-af76-48e6-a934-35d00a05e5e8" />
+
+## Store Intelligence page
+
+<img width="1505" height="590" alt="Screenshot 2026-11-26 at 9 55 55 AM" src="https://github.com/user-attachments/assets/86974837-6c25-4f54-b6a0-fe844a726024" />
+
+## Access Review page
+
+<img width="1508" height="528" alt="Screenshot 2026-11-26 at 10 20 13 AM" src="https://github.com/user-attachments/assets/9d829603-fe7f-4261-8932-b58b35fb088d" />
+
+
+
+
+
+
