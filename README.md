@@ -172,3 +172,7 @@ cd <repository-name>
 npm i
 npm run dev
 ```
+
+## RetailGuardAi Dashboard
+
+<img width="1505" height="853" alt="Screenshot 2026-11-26 at 9 46 10 AM" src="https://github.com/user-attachments/assets/98589e51-33a1-452b-b8e5-8c4bfa401689" />
