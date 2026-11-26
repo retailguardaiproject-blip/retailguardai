@@ -17,6 +17,7 @@ Basis	RetailGuard poster, previous team discussions, starter-package scope and p
 **1. Executive summary**
 RetailGuard AI is a proposed decision-support tool for retail managers who need to identify unusual inventory, return and discount patterns without manually inspecting every transaction. The MVP will ingest synthetic retail data, validate inputs, calculate explainable anomaly indicators, prioritise review cases and use a large language model (LLM) to produce evidence-grounded investigation briefs. A manager remains responsible for interpreting findings and closing cases.
 The initial delivery approach is Python + Pandas for deterministic calculations, Streamlit for the interface, a single LLM API for investigation briefs, GitHub for collaboration and a simple prototype deployment. The team should first prove a working inventory variance flow before adding returns, discounts and GenAI.
+
 **2. Problem statement and opportunity**
 Area	RetailGuard-specific definition
 Problem	Retail operations teams face high volumes of stock movements, sales, returns and discounts; manually identifying significant exceptions and deciding what to check next can be slow.
@@ -37,6 +38,7 @@ Non-goal	Live POS integration, real-time surveillance, multi-cloud architecture 
 Non-goal	Guaranteed reductions in fraud, losses or review time.	Requires later baseline and pilot measurement.
 
 Important: poster impact figures such as ≥65%, ≤15 minutes or ≥70% were not demonstrated results and must not be presented as achieved KPIs. Replace them with measured pilot results only when available.
+
 **4. Users, personas and use cases**
 Primary persona (hypothetical): Store Operations Manager — supervises inventory accuracy and investigates exceptions across stores; needs a ranked list of cases and clear evidence without reviewing every line item.
 Secondary persona (hypothetical): Retail Loss Prevention / Internal Audit Analyst — reviews unusual return and discount activity and documents investigation outcomes.
@@ -64,6 +66,7 @@ Anomaly	Unusual pattern requiring review; not proof of misconduct.
 Investigation brief	Structured explanation of observed evidence, uncertainties and suggested checks.
 
 **Minimum inventory data dictionary**
+
 Field	Type / constraint	Use
 record_id	Unique text, required	Traceability
 store_id, product_id	Text, required	Grouping
@@ -77,7 +80,9 @@ physical_count	Non-negative integer	Variance
 unit_cost	Non-negative number, optional	Estimated exposure; not validated loss
 
 Sample-data basis from the prior starter package: 14 synthetic inventory records across five stores, an expected-results CSV and deliberately invalid test rows. The team should verify that the actual file columns match this PRD before implementing the parser. The poster’s Store S3 rates (8.7%, 14.2%, 21.0%, 2.1%) are illustrative and are not automatically derived from the starter inventory CSV.
+
 **Inventory business rules — proposed**
+
 •	BR-01: Validate schema, uniqueness, numeric types and non-negative quantities before calculations.
 •	BR-02: Expected stock = opening stock + receipts + restocked returns − units sold − authorised stock reductions; define how other signed adjustments are represented.
 •	BR-03: Shortage units = expected stock − physical count; positive values indicate shortage, negative values indicate surplus.
@@ -85,7 +90,9 @@ Sample-data basis from the prior starter package: 14 synthetic inventory records
 •	BR-05: An illustrative shortage review threshold of >3% may be used for the starter exercise; confirm exact threshold, rounding and whether it applies only to positive shortages before sign-off.
 •	BR-06: Do not calculate return/discount anomaly rates until denominators, time windows, comparison groups and thresholds are explicitly defined.
 •	BR-07: Every flagged case must retain source record IDs and the underlying calculation.
+
 **6. Solution overview and why GenAI**
+
 Proposed workflow: Upload CSV → validate data → calculate inventory variance / later return and discount indicators → apply explainable prioritisation → generate structured AI investigation brief → manager review and case status update.
 Use Python for calculations and rules. Use the LLM only to transform verified case evidence into an accessible narrative, identify missing information and recommend non-accusatory checks. A simpler rules engine can detect numerical anomalies; GenAI adds value primarily in communicating multi-record context and next steps.
 Investigation brief output contract — proposed
@@ -99,7 +106,9 @@ recommended_checks	Review stock adjustments, return reasons, approvals and compa
 review_status	Open / In Review / Closed; managed by user, not LLM
 
 Failure handling: if LLM is unavailable, show deterministic calculation and a rules-based template summary; never hide the case or invent a narrative.
+
 **7. Strategy lanes and team ownership**
+
 Member	Primary lane	Deliverables	Supporting lane
 Soubhagya Halgeri	Business / product lead	PRD, rules, user stories, acceptance criteria, scope and demo narrative	UAT and stakeholder decisions
 Anju Abhilash	Data & analytics	Synthetic data, Pandas cleaning, variance logic, reference results and charts	LLM evidence payload
@@ -108,7 +117,9 @@ Triveni G	QA & AI evaluation	Test plan, invalid-input cases, calculation asserti
 Nagashree V	User research & adoption	Persona review, usability questions, walkthrough notes, user guidance and presentation coordination	Documentation and feedback
 
 Capacity caveat: Anju has learned Python but is not yet advanced; Logeshwari can write small programs and automation scripts. Assign a first joint integration task before committing to advanced features. All roles are proposed until the team confirms.
+
 **8. Tooling and technology choices**
+
 Need	Proposed choice	Reason	Limitation / fallback
 Input	CSV / Excel export	Simple and inspectable	CSV only for first build
 Processing	Python + Pandas	Transparent calculations	Use plain Python for small data if needed
@@ -121,7 +132,9 @@ Collaboration	GitHub	Shared code, issues and review	Repository access and learni
 Deployment	Streamlit Community Cloud (proposed)	Convenient demo deployment	Local demo / screen recording backup
 
 Open decision: Select an LLM provider/model after confirming access, pricing, data handling and available API credentials. Do not put API keys in source code or uploaded CSV files.
+
 **9. Responsible AI, reliability and safety**
+
 •	No fraud verdicts: use “flagged for review”, “possible explanation” and “requires verification”.
 •	Grounding: AI may only use validated structured case data; display numeric source evidence and IDs.
 •	No fabricated numbers, causal claims or certainty scores without a validated method.
@@ -130,7 +143,9 @@ Open decision: Select an LLM provider/model after confirming access, pricing, da
 •	Quality evaluation: proposed 20 sample briefs covering factual accuracy, omissions, uncertainty, relevance and safe language.
 •	Input resilience: validate CSV data; treat uploaded free text as untrusted; prevent it from overriding system instructions.
 •	Access and cost controls: secrets management, restricted deployment where possible, bounded LLM requests and fallback output.
+
 **10. Risks, dependencies and mitigations**
+
 Risk / dependency	Assessment	Mitigation	Owner
 Python / Streamlit learning curve	Medium likelihood; schedule impact	Start with one CSV and one calculation; pair Anju and Logeshwari	Anju + Logeshwari
 Unclear stock adjustment semantics	High correctness impact	Approve data dictionary and example calculations before coding	Soubhagya + Anju
@@ -141,6 +156,7 @@ API cost / network or deployment failure	Medium demo impact	Limit requests; prep
 Scope creep (live integrations, fraud scoring)	High schedule impact	Freeze first milestone and maintain deferred backlog	Soubhagya
 
 **Implementation roadmap — proposed four weeks**
+
 Week	Main objective	Team output / exit gate
 Week 1	Requirements and data foundation	Approved fields, 3 user stories, rule definitions, sample CSV and reference expected results.
 Week 2	Deterministic analytics prototype	CSV upload, validation, expected-stock and variance calculations, flagged cases in Streamlit.
@@ -148,6 +164,7 @@ Week 3	GenAI explanation and case workflow	Evidence-grounded investigation brief
 Week 4	Testing, deployment and demo	QA execution, critical fixes, deployed/local backup and rehearsed demonstration.
 
 **Immediate first three-day handoff**
+
 •	Day 1 — Soubhagya and Anju approve schema, formula and three worked examples; Logeshwari creates repo/app skeleton.
 •	Day 2 — Anju writes and verifies calculation script; Triveni prepares valid/invalid test cases; Nagashree sketches manager view.
 •	Day 3 — Logeshwari integrates CSV upload and calculation display; team runs a review and logs defects.
