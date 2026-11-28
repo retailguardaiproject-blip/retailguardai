@@ -1,0 +1,187 @@
+{
+  "name": "RetailGuard AI - Run All Test Scenarios",
+  "nodes": [
+    {
+      "parameters": {},
+      "id": "b92d5717-1565-4b4c-a458-cc1cd560f841",
+      "name": "Run All Test Suites",
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        0,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "mode": "raw",
+        "jsonOutput": "{\n  \"suites\": [\n    { \"suite\": \"Good\", \"url\": \"https://raw.githubusercontent.com/retailguardaiproject-blip/RetailGuard-AI/refs/heads/main/test_good.csv\" },\n    { \"suite\": \"Bad (Negative)\", \"url\": \"https://raw.githubusercontent.com/retailguardaiproject-blip/RetailGuard-AI/main/Negative_Test_Cases.csv\" },\n    { \"suite\": \"Anomaly\", \"url\": \"https://raw.githubusercontent.com/retailguardaiproject-blip/RetailGuard-AI/refs/heads/main/test_anomaly.csv\" }\n  ]\n}",
+        "options": {}
+      },
+      "id": "08fd2b1a-2bdc-403a-a55b-2d8f368be087",
+      "name": "Define Test Suites",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.5,
+      "position": [
+        224,
+        0
+      ],
+      "notes": "The Bad suite link given (test_bad(Negative%20Testing).csv) returns 404, so Negative_Test_Cases.csv from the same repo is used. Change the url here if the file is added later."
+    },
+    {
+      "parameters": {
+        "fieldToSplitOut": "suites",
+        "options": {}
+      },
+      "id": "0cca6f1c-4a57-4633-9a57-421e9a644c15",
+      "name": "Split Out Suites",
+      "type": "n8n-nodes-base.splitOut",
+      "typeVersion": 1.1,
+      "position": [
+        448,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "url": "={{ $json.url }}",
+        "options": {
+          "response": {
+            "response": {
+              "responseFormat": "text",
+              "outputPropertyName": "csv"
+            }
+          }
+        }
+      },
+      "id": "7c8fc55f-59c0-4550-ad5d-bed535c35cf9",
+      "name": "Download Test CSV",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.5,
+      "position": [
+        672,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "\n// Same rules as the \"Code in JavaScript\" node in the main RetailGuard workflow.\nconst suites = $('Split Out Suites').all();\nconst downloads = $input.all();\n\nfunction parseCsv(text) {\n  const rows = [];\n  let row = [], field = '', inQ = false;\n  for (let i = 0; i < text.length; i++) {\n    const c = text[i];\n    if (inQ) {\n      if (c === '\"') {\n        if (text[i + 1] === '\"') { field += '\"'; i++; } else { inQ = false; }\n      } else { field += c; }\n    } else if (c === '\"') { inQ = true; }\n    else if (c === ',') { row.push(field); field = ''; }\n    else if (c === '\\n') { row.push(field); rows.push(row); row = []; field = ''; }\n    else if (c === '\\r') { /* skip */ }\n    else { field += c; }\n  }\n  if (field !== '' || row.length) { row.push(field); rows.push(row); }\n  const header = rows.shift() || [];\n  return rows\n    .filter(r => r.some(v => v !== ''))\n    .map(r => {\n      const o = {};\n      header.forEach((h, idx) => { o[h.trim()] = r[idx] !== undefined ? r[idx] : ''; });\n      return o;\n    });\n}\n\nconst num = (value) => {\n  if (value === null || value === undefined || value === '') return null;\n  const n = Number(value);\n  return Number.isFinite(n) ? n : null;\n};\n\nconst out = [];\ndownloads.forEach((dl, i) => {\n  const suite = suites[i] ? suites[i].json.suite : 'Unknown';\n  const records = parseCsv(String(dl.json.csv || ''));\n  const seenCaseIds = new Set();\n\n  for (const r of records) {\n    const caseId = r['Case ID'];\n    const duplicateCaseId = caseId ? seenCaseIds.has(caseId) : false;\n    if (caseId) seenCaseIds.add(caseId);\n\n    const opening = num(r['Synthetic Opening Stock']);\n    const received = num(r['Synthetic Purchases Received']);\n    const customerReturns = num(r['Synthetic Customer Returns Restocked']);\n    const sold = num(r['Source Units Sold']);\n    const supplierReturns = num(r['Synthetic Supplier Returns']);\n    const actualClosing = num(r['Synthetic Actual Closing Stock']);\n    const missingStockInputs = [opening, received, customerReturns, sold, supplierReturns, actualClosing].some(v => v === null);\n\n    let expectedClosing = null, variance = null;\n    if (!missingStockInputs) {\n      expectedClosing = opening + received + customerReturns - sold - supplierReturns;\n      variance = actualClosing - expectedClosing;\n    }\n\n    const discount = num(r['Source Discount (%)']);\n    const inventoryAlert = variance !== null && Math.abs(variance) >= 5;\n    const discountAlert = discount !== null && discount >= 20;\n    const returnsAlert = customerReturns !== null && customerReturns >= 4;\n\n    const alerts = [];\n    if (inventoryAlert) alerts.push('INVENTORY_VARIANCE');\n    if (discountAlert) alerts.push('HIGH_DISCOUNT');\n    if (returnsAlert) alerts.push('HIGH_CUSTOMER_RETURNS');\n\n    const missingIdentity = !caseId || !r['Date'] || !r['Store ID'] || !r['Product ID'];\n    const validationIssues = [];\n    if (missingIdentity) validationIssues.push('Missing case/date/store/product identity');\n    if (duplicateCaseId) validationIssues.push('Duplicate Case ID');\n    if (missingStockInputs) validationIssues.push('Inventory variance unavailable: required stock inputs missing');\n\n    out.push({\n      json: {\n        suite,\n        caseId: caseId || '(blank)',\n        input: r,\n        result: {\n          dataStatus: validationIssues.length ? 'REVIEW_DATA' : 'VALIDATED_FOR_RULES',\n          validationIssues: validationIssues.join('; '),\n          expectedClosing,\n          variance,\n          inventoryAlert,\n          discountAlert,\n          returnsAlert,\n          alertTypes: alerts.join(', ')\n        }\n      }\n    });\n  }\n});\n\nreturn out;\n"
+      },
+      "id": "989c0ecf-9a02-4742-90f4-f159b2d2cb64",
+      "name": "Apply RetailGuard Rules",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        896,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "\nconst flags = (inv, disc, ret) =>\n  'inventory=' + inv + ', discount=' + disc + ', returns=' + ret;\n\nreturn $input.all().map(item => {\n  const { suite, caseId, input, result } = item.json;\n  const actualFlags = flags(result.inventoryAlert, result.discountAlert, result.returnsAlert);\n  const anyAlert = result.inventoryAlert || result.discountAlert || result.returnsAlert;\n  let expected = '', actual = '', pass = false;\n\n  if (suite === 'Good') {\n    expected = 'No alerts, status VALIDATED_FOR_RULES';\n    actual = actualFlags + ', status ' + result.dataStatus;\n    pass = !anyAlert && result.dataStatus === 'VALIDATED_FOR_RULES';\n  } else if (suite === 'Anomaly') {\n    expected = 'At least one alert raised';\n    actual = actualFlags;\n    pass = anyAlert;\n  } else {\n    const expStatus = String(input['Data Status'] || '').trim();\n    if (expStatus === 'Anomalous Rule Trigger') {\n      const expInv = String(input['Inventory Alert'] || '').startsWith('Inventory');\n      const expDisc = String(input['Discount Alert (demo rule >=20%)'] || '').startsWith('Discount Alert');\n      const expRet = String(input['Returns Alert (synthetic demo rule >=4 units)'] || '').startsWith('Returns Alert');\n      expected = flags(expInv, expDisc, expRet);\n      actual = actualFlags;\n      pass = expInv === result.inventoryAlert && expDisc === result.discountAlert && expRet === result.returnsAlert;\n    } else {\n      expected = 'Record flagged REVIEW_DATA (expected ' + (expStatus || 'invalid') + ')';\n      actual = 'status ' + result.dataStatus + (result.validationIssues ? ' (' + result.validationIssues + ')' : '');\n      pass = result.dataStatus === 'REVIEW_DATA';\n    }\n  }\n\n  return {\n    json: {\n      'Suite': suite,\n      'Case ID': caseId,\n      'Expected': expected,\n      'Actual': actual,\n      'Result': pass ? 'PASS' : 'FAIL',\n      'Variance': result.variance,\n      'Alert Types': result.alertTypes\n    }\n  };\n});\n"
+      },
+      "id": "ef9b61a8-34ec-402a-af2b-b84cfec8c176",
+      "name": "Check Expected Results",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1120,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "\nconst rows = $input.all().map(i => i.json);\nconst bySuite = {};\nfor (const r of rows) {\n  const s = bySuite[r['Suite']] || (bySuite[r['Suite']] = { suite: r['Suite'], total: 0, passed: 0, failed: 0 });\n  s.total++;\n  if (r['Result'] === 'PASS') s.passed++; else s.failed++;\n}\nconst failed = rows.filter(r => r['Result'] === 'FAIL');\nreturn [{\n  json: {\n    overallResult: failed.length === 0 ? 'ALL PASSED' : 'FAILURES FOUND',\n    totalTests: rows.length,\n    passed: rows.length - failed.length,\n    failed: failed.length,\n    suites: Object.values(bySuite),\n    failedCases: failed,\n    allResults: rows\n  }\n}];\n"
+      },
+      "id": "f18fa22e-b9c5-4e96-8a28-6841e7410fec",
+      "name": "Build Test Report",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1344,
+        0
+      ]
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Run All Test Suites": {
+      "main": [
+        [
+          {
+            "node": "Define Test Suites",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Define Test Suites": {
+      "main": [
+        [
+          {
+            "node": "Split Out Suites",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Split Out Suites": {
+      "main": [
+        [
+          {
+            "node": "Download Test CSV",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Download Test CSV": {
+      "main": [
+        [
+          {
+            "node": "Apply RetailGuard Rules",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Apply RetailGuard Rules": {
+      "main": [
+        [
+          {
+            "node": "Check Expected Results",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check Expected Results": {
+      "main": [
+        [
+          {
+            "node": "Build Test Report",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "versionId": "25ffe841-b10d-49a1-9ead-8e3ec7c522ab",
+  "meta": {
+    "instanceId": "06aa98e76acfd6abde081eda0b9f3bc45db2bb267936a49bf39978da6a005a09"
+  },
+  "nodeGroups": [],
+  "id": "vzIzdI6dgUqLzCbE",
+  "tags": []
+}

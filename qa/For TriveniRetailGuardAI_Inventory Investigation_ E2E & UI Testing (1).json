@@ -1,0 +1,356 @@
+{
+  "name": "For TriveniRetailGuardAI_Inventory Investigation_ E2E & UI Testing",
+  "nodes": [
+    {
+      "parameters": {},
+      "id": "00e27291-bf00-48ab-a36c-57bf2aae7e91",
+      "name": "RetailGuard AI - Inventory Investigation",
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        -64,
+        320
+      ]
+    },
+    {
+      "parameters": {
+        "url": "https://raw.githubusercontent.com/Anju02aug/RetailGuard-AI/main/retailguard_cases.xlsx",
+        "options": {
+          "response": {
+            "response": {
+              "responseFormat": "file"
+            }
+          }
+        }
+      },
+      "id": "b9b7623b-b7cd-44cf-ad57-db0f598cc268",
+      "name": "HTTP Request",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.5,
+      "position": [
+        272,
+        320
+      ],
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "jsCode": "\nconst ran = (n) => { try { return $(n).isExecuted; } catch (e) { return false; } };\nconst errText = (e) => {\n  if (!e) return '';\n  if (typeof e === 'string') return e;\n  return e.message || e.description || JSON.stringify(e);\n};\nconst execUrl = 'https://retailguardprojtest.app.n8n.cloud/workflow/' + $workflow.id + '/executions/' + $execution.id;\nconst runAt = $now.setZone('Asia/Kolkata').toFormat('yyyy-LL-dd HH:mm:ss');\n\n// Early failure: a data step failed and sent its error here, so the UI check never ran\nif (!ran('Verify Browserless UI')) {\n  const steps = [\n    ['HTTP Request', 'Download cases spreadsheet from GitHub'],\n    ['Extract from File1', 'Read spreadsheet rows'],\n    ['Code in JavaScript', 'Calculate variance and alerts'],\n    ['Summary Node', 'Build summary']\n  ];\n  let failed = steps[0];\n  for (const s of steps) { if (ran(s[0])) failed = s; }\n  const first = $input.first();\n  const err = errText(first && first.json && first.json.error) || 'Unknown error';\n  const html =\n    '<h2 style=\"color:#cf222e\">RetailGuard E2E run: FAILED</h2>' +\n    '<p>Run time (IST): ' + runAt + '<br>Execution: <a href=\"' + execUrl + '\">' + execUrl + '</a></p>' +\n    '<p><b>Failed step:</b> ' + failed[1] + ' (node \"' + failed[0] + '\")</p>' +\n    '<p><b>Error:</b> ' + String(err).replace(/</g, '&lt;') + '</p>' +\n    '<p>Later steps (send to Lovable, Browserless UI check) did not run. Error details are attached.</p>';\n  const report = 'RetailGuard E2E run: FAILED\\nRun time (IST): ' + runAt + '\\nExecution: ' + execUrl +\n    '\\nFailed step: ' + failed[1] + ' (node ' + failed[0] + ')\\nError: ' + err + '\\n';\n  return [{\n    json: { status: 'FAILED', failedStep: failed[0], error: err, subject: 'RetailGuard E2E run FAILED - ' + runAt, html, executionUrl: execUrl },\n    binary: { data: { data: Buffer.from(report).toString('base64'), mimeType: 'text/plain', fileName: 'retailguard-error-report.txt' } }\n  }];\n}\n\nconst shot = $input.first();\n// Read output 0 (success): this node also links here via its error output, which is empty on a good run\nlet summary = {};\ntry { summary = ($('Summary Node').first(0) || {}).json || {}; } catch (e) { summary = {}; }\n\nlet lovable = {};\ntry { lovable = $('Send Data to Lovable').first().json || {}; } catch (e) { lovable = { error: 'Step did not run' }; }\n\nconst lovableOk = !lovable.error;\nconst screenshot = shot.binary && shot.binary.data;\nconst uiOk = !shot.json.error && !!screenshot;\nconst status = lovableOk && uiOk ? 'SUCCESS' : 'FAILED';\n\nconst row = (label, value) => '<tr><td style=\"padding:4px 12px;border:1px solid #ddd\"><b>' + label + '</b></td><td style=\"padding:4px 12px;border:1px solid #ddd\">' + value + '</td></tr>';\nconst stepLine = (ok, err) => ok ? 'Passed' : 'Failed: ' + errText(err);\n\nconst html =\n  '<h2 style=\"color:' + (status === 'SUCCESS' ? '#1a7f37' : '#cf222e') + '\">RetailGuard E2E run: ' + status + '</h2>' +\n  '<p>Run time (IST): ' + runAt + '<br>Execution: <a href=\"' + execUrl + '\">' + execUrl + '</a></p>' +\n  '<h3>Step results</h3><table style=\"border-collapse:collapse\">' +\n  row('Send data to Lovable', stepLine(lovableOk, lovable.error)) +\n  row('Browserless UI check', stepLine(uiOk, shot.json.error || (screenshot ? '' : 'No screenshot returned'))) +\n  '</table>' +\n  '<h3>Inventory summary</h3><table style=\"border-collapse:collapse\">' +\n  row('Total records', summary.totalRecords ?? 'n/a') +\n  row('Inventory alerts', summary.inventoryAlerts ?? 'n/a') +\n  row('Discount alerts', summary.discountAlerts ?? 'n/a') +\n  row('Returns alerts', summary.returnsAlerts ?? 'n/a') +\n  row('Records requiring review', summary.recordsRequiringReview ?? 'n/a') +\n  row('Records with validation issues', summary.recordsWithValidationIssues ?? 'n/a') +\n  '</table>' +\n  '<p>' + (uiOk ? 'Screenshot of the UI is attached.' : 'Error details are attached.') + '</p>';\n\nlet binary;\nif (uiOk) {\n  binary = { data: { ...screenshot, fileName: screenshot.fileName || 'retailguard-ui-screenshot.png' } };\n} else {\n  const report = 'RetailGuard E2E run: ' + status + '\\nRun time (IST): ' + runAt + '\\nExecution: ' + execUrl +\n    '\\n\\nSend data to Lovable: ' + stepLine(lovableOk, lovable.error) +\n    '\\nBrowserless UI check: ' + stepLine(uiOk, shot.json.error || 'No screenshot returned') + '\\n';\n  binary = { data: { data: Buffer.from(report).toString('base64'), mimeType: 'text/plain', fileName: 'retailguard-error-report.txt' } };\n}\n\nreturn [{\n  json: { status, subject: 'RetailGuard E2E run ' + status + ' - ' + runAt, html, executionUrl: execUrl },\n  binary\n}];\n"
+      },
+      "id": "4551cd09-6392-4b55-beb6-b12248b70640",
+      "name": "Build Run Report",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1376,
+        720
+      ]
+    },
+    {
+      "parameters": {
+        "sendTo": "retailguardaiproject@gmail.com",
+        "subject": "={{ $json.subject }}",
+        "message": "={{ $json.html }}",
+        "options": {
+          "appendAttribution": false,
+          "attachmentsUi": {
+            "attachmentsBinary": [
+              {}
+            ]
+          }
+        }
+      },
+      "id": "8389a0ca-3a8c-4b28-9b4d-10c4911aae05",
+      "name": "Email Run Report",
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        1600,
+        720
+      ],
+      "webhookId": "d1f7030b-5fa0-45a7-b783-3f6e505baf45",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "CsIxbqxp2SoFJYZd",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "xlsx",
+        "options": {}
+      },
+      "id": "365e8edf-ae60-4646-b0b3-6f77e2d85228",
+      "name": "Extract from File1",
+      "type": "n8n-nodes-base.extractFromFile",
+      "typeVersion": 1.2,
+      "position": [
+        496,
+        320
+      ],
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "jsCode": "\nconst items = $input.all();\nconst seenCaseIds = new Set();\n\nconst num = (value) => {\n  if (value === null || value === undefined || value === '') return null;\n  const n = Number(value);\n  return Number.isFinite(n) ? n : null;\n};\n\nreturn items.map((item) => {\n  const r = item.json;\n  const caseId = r[\"Case ID\"];\n  const duplicateCaseId = caseId ? seenCaseIds.has(caseId) : false;\n  if (caseId) seenCaseIds.add(caseId);\n\n  const opening = num(r[\"Synthetic Opening Stock\"]);\n  const received = num(r[\"Synthetic Purchases Received\"]);\n  const customerReturns = num(r[\"Synthetic Customer Returns Restocked\"]);\n  const sold = num(r[\"Source Units Sold\"]);\n  const supplierReturns = num(r[\"Synthetic Supplier Returns\"]);\n  const actualClosing = num(r[\"Synthetic Actual Closing Stock\"]);\n\n  const required = [\n    opening, received, customerReturns, sold,\n    supplierReturns, actualClosing\n  ];\n\n  const missingStockInputs = required.some(v => v === null);\n\n  let expectedClosing = null;\n  let variance = null;\n\n  if (!missingStockInputs) {\n    expectedClosing =\n      opening + received + customerReturns - sold - supplierReturns;\n    variance = actualClosing - expectedClosing;\n  }\n\n  const discount = num(r[\"Source Discount (%)\"]);\n  const inventoryAlert =\n    variance !== null && Math.abs(variance) >= 5;\n  const discountAlert = discount !== null && discount >= 20;\n  const returnsAlert =\n    customerReturns !== null && customerReturns >= 4;\n\n  const alerts = [];\n  if (inventoryAlert) alerts.push(\"INVENTORY_VARIANCE\");\n  if (discountAlert) alerts.push(\"HIGH_DISCOUNT\");\n  if (returnsAlert) alerts.push(\"HIGH_CUSTOMER_RETURNS\");\n\n  const missingIdentity =\n    !caseId || !r[\"Date\"] || !r[\"Store ID\"] || !r[\"Product ID\"];\n\n  const validationIssues = [];\n  if (missingIdentity) validationIssues.push(\"Missing case/date/store/product identity\");\n  if (duplicateCaseId) validationIssues.push(\"Duplicate Case ID\");\n  if (missingStockInputs) validationIssues.push(\"Inventory variance unavailable: required stock inputs missing\");\n\n  let nextCheck = \"Review the source record and confirm the transaction details.\";\n  if (inventoryAlert) {\n    nextCheck = \"Verify physical stock count, goods received, sales, returns and supplier-return records.\";\n  } else if (discountAlert) {\n    nextCheck = \"Check discount authorisation and the promotion or transaction record.\";\n  } else if (returnsAlert) {\n    nextCheck = \"Verify returned units and confirm that restocked units were physically returned to inventory.\";\n  }\n\n  const summary = alerts.length\n    ? \"Review requested: \" + alerts.join(\", \") + \". This is a rule-based flag, not proof of fraud.\"\n    : \"No configured alert rule was triggered. This does not guarantee the record is error-free.\";\n\n  return {\n    json: {\n      ...r,\n      \"Data Status\": validationIssues.length ? \"REVIEW_DATA\" : \"VALIDATED_FOR_RULES\",\n      \"Validation Issues\": validationIssues.join(\"; \"),\n      \"Expected Closing Stock (Calculated)\": expectedClosing,\n      \"Inventory Variance (Calculated)\": variance,\n      \"Inventory Alert\": inventoryAlert,\n      \"Discount Alert\": discountAlert,\n      \"Returns Alert\": returnsAlert,\n      \"Alert Types\": alerts.join(\", \"),\n      \"Review Priority\": alerts.length ? \"Review Required\" : \"No Rule Triggered\",\n      \"Investigation Summary\": summary,\n      \"Recommended Next Check\": nextCheck,\n      \"Data Provenance\": \"Source fields retained; synthetic movement fields are demonstration data\"\n    }\n  };\n});\n"
+      },
+      "id": "47f34acf-c6a5-4ce6-9681-73cf0d76a033",
+      "name": "Code in JavaScript",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        800,
+        320
+      ],
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "jsCode": "\nconst rows = $input.all().map(item => item.json);\n\nconst count = (field) =>\n  rows.filter(row => row[field] === true).length;\n\nconst pick = (r, keys) => {\n  for (const k of keys) {\n    if (r[k] !== undefined && r[k] !== null && r[k] !== '') return r[k];\n  }\n  return null;\n};\n\nconst cases = rows.map(r => ({\n  ...r,\n  \"Case ID\": pick(r, [\"Case ID\", \"Case_ID\", \"case_id\", \"record_id\"]),\n  \"Store ID\": pick(r, [\"Store ID\", \"store_id\"]),\n  \"Product ID\": pick(r, [\"Product ID\", \"product_id\"]),\n  \"Date\": pick(r, [\"Date\", \"period_end\", \"date\"])\n}));\n\nreturn [{\n  json: {\n    totalRecords: rows.length,\n    inventoryAlerts: count(\"Inventory Alert\"),\n    discountAlerts: count(\"Discount Alert\"),\n    returnsAlerts: count(\"Returns Alert\"),\n    recordsRequiringReview: rows.filter(\n      row => row[\"Review Priority\"] === \"Review Required\"\n    ).length,\n    recordsWithValidationIssues: rows.filter(\n      row => row[\"Validation Issues\"]\n    ).length,\n    cases\n  }\n}];\n"
+      },
+      "id": "7b70fc7c-e6a5-4f6a-9ade-58e9820d7c55",
+      "name": "Summary Node",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1024,
+        320
+      ],
+      "onError": "continueErrorOutput",
+      "notes": "Output shape: totalRecords, inventoryAlerts, discountAlerts, returnsAlerts, recordsRequiringReview, recordsWithValidationIssues, cases[]\n\nExample:\n{\n  \"totalRecords\": 3,\n  \"inventoryAlerts\": 1,\n  \"discountAlerts\": 1,\n  \"returnsAlerts\": 0,\n  \"recordsRequiringReview\": 2,\n  \"recordsWithValidationIssues\": 3,\n  \"cases\": [\n    { \"Case ID\": \"RG-0001\", \"Store ID\": \"S003\", \"Product ID\": \"P0014\", \"Category\": \"Groceries\",\n      \"Inventory Variance (actual - expected)\": 0, \"Review Priority\": \"Review\",\n      \"Inventory Alert\": \"...\", \"Evidence / Explanation\": \"...\", \"Recommended Next Check\": \"...\" }\n  ]\n}"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://retailguardai.lovable.app",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"code\": \"module.exports = async ({ page, context }) => { await page.goto(context.url, { waitUntil: 'networkidle2' }); const emailInput = await page.$('input[type=\\\"email\\\"], input[name=\\\"email\\\"]'); if (emailInput) { await emailInput.type(context.email, { delay: 20 }); await page.type('input[type=\\\"password\\\"]', context.password, { delay: 20 }); await Promise.all([ page.click('button[type=\\\"submit\\\"]'), page.waitForNavigation({ waitUntil: 'networkidle2', timeout: 10000 }).catch(() => {}) ]); if (page.url() !== context.url) { await page.goto(context.url, { waitUntil: 'networkidle2' }); } } const buttons = await page.$$('button:not([disabled]), .btn:not([disabled]), a.cta'); for (const btn of buttons) { try { await btn.click(); await new Promise(r => setTimeout(r, 400)); } catch (e) {} } const screenshot = await page.screenshot({ fullPage: true }); return { data: screenshot.toString('base64'), type: 'image/png' }; };\",\n  \"context\": {\n    \"url\": \"{{ $json['url'] }}\",\n    \"email\": \"retailguardai2@example.com\",\n    \"password\": \"revkik-qaqnod-hynsE4\"\n  }\n}",
+        "options": {}
+      },
+      "id": "b8a34e13-0e63-4ff1-9d26-74f7e3e50a5e",
+      "name": "Send Data to Lovable",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.5,
+      "position": [
+        1328,
+        320
+      ],
+      "executeOnce": true,
+      "onError": "continueRegularOutput",
+      "notes": "https://case-wise-summary-studio.lovable.app\n\n\nhttps://casewise-summary-studio.lovable.app/api/public/receive-summary"
+    },
+    {
+      "parameters": {
+        "amount": 2
+      },
+      "id": "7765bbc6-1a18-4c5f-89b1-b3b3c73a4694",
+      "name": "Wait for DB Sync",
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        1552,
+        320
+      ],
+      "webhookId": "86e64a8a-99f5-4b8f-9521-673b0021d10a"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://production-sfo.browserless.io/function",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpTemplatedCustomAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "{\n  \"code\": \"export default async function ({ page }) {\\n  await page.setViewport({ width: 1440, height: 900 });\\n  await page.goto('https://vercel.app', { waitUntil: 'networkidle2' });\\n  await new Promise(r => setTimeout(r, 3000));\\n  const screenshotBuffer = await page.screenshot({ fullPage: true, type: 'png' });\\n  return {\\n    data: screenshotBuffer,\\n    type: 'image/png'\\n  };\\n}\"\n}\n",
+        "options": {
+          "response": {
+            "response": {
+              "responseFormat": "file"
+            }
+          }
+        }
+      },
+      "id": "f46af85a-c1ec-42dc-af13-ec5c60520795",
+      "name": "Verify Browserless UI",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.5,
+      "position": [
+        1776,
+        320
+      ],
+      "waitBetweenTries": 2000,
+      "credentials": {
+        "httpTemplatedCustomAuth": {
+          "id": "i3pCpnTtiJHH9E3S",
+          "name": "Browserless API Token (Triveni G)"
+        }
+      },
+      "onError": "continueRegularOutput",
+      "notes": "https://production-sfo.browserless.io/function (token is supplied by the Browserless credential)"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "RetailGuard AI - Inventory Investigation": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request": {
+      "main": [
+        [
+          {
+            "node": "Extract from File1",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Build Run Report",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Build Run Report": {
+      "main": [
+        [
+          {
+            "node": "Email Run Report",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract from File1": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Build Run Report",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript": {
+      "main": [
+        [
+          {
+            "node": "Summary Node",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Build Run Report",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Summary Node": {
+      "main": [
+        [
+          {
+            "node": "Send Data to Lovable",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Build Run Report",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send Data to Lovable": {
+      "main": [
+        [
+          {
+            "node": "Wait for DB Sync",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait for DB Sync": {
+      "main": [
+        [
+          {
+            "node": "Verify Browserless UI",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Verify Browserless UI": {
+      "main": [
+        [
+          {
+            "node": "Build Run Report",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "versionId": "f5fb4fe7-8458-4550-b396-4a0bc96d8889",
+  "meta": {
+    "instanceId": "06aa98e76acfd6abde081eda0b9f3bc45db2bb267936a49bf39978da6a005a09"
+  },
+  "nodeGroups": [
+    {
+      "id": "7221ee1d-21b4-4981-bce0-2607b8085020",
+      "name": "Publish and check UI",
+      "nodeIds": [
+        "b8a34e13-0e63-4ff1-9d26-74f7e3e50a5e",
+        "7765bbc6-1a18-4c5f-89b1-b3b3c73a4694",
+        "f46af85a-c1ec-42dc-af13-ec5c60520795"
+      ],
+      "description": "Sends the summary to the RetailGuard app, pauses briefly, then takes a Browserless screenshot of the UI"
+    },
+    {
+      "id": "367dd09f-81da-46d5-9110-5e3b0ce4a4e0",
+      "name": "Email run report",
+      "nodeIds": [
+        "4551cd09-6392-4b55-beb6-b12248b70640",
+        "8389a0ca-3a8c-4b28-9b4d-10c4911aae05"
+      ],
+      "description": "Marks the run as passed or failed and emails the summary with the screenshot or error details attached"
+    }
+  ],
+  "id": "mjLJdUo7dHFSshpo",
+  "tags": []
+}
